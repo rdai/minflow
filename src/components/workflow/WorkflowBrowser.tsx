@@ -17,6 +17,7 @@ const DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"]
 export default function WorkflowBrowser({ workflows }: Props) {
   const [mediumFilter, setMediumFilter] = useState<string[]>([])
   const [difficultyFilter, setDifficultyFilter] = useState<string[]>([])
+  const [tagFilter, setTagFilter] = useState<string[]>([])
 
   function toggleMedium(m: string) {
     setMediumFilter(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])
@@ -24,16 +25,21 @@ export default function WorkflowBrowser({ workflows }: Props) {
   function toggleDifficulty(d: string) {
     setDifficultyFilter(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d])
   }
+  function toggleTag(t: string) {
+    setTagFilter(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])
+  }
   function clearFilters() {
     setMediumFilter([])
     setDifficultyFilter([])
+    setTagFilter([])
   }
 
-  const hasFilters = mediumFilter.length > 0 || difficultyFilter.length > 0
+  const hasFilters = mediumFilter.length > 0 || difficultyFilter.length > 0 || tagFilter.length > 0
 
   const filtered = workflows.filter(wf => {
     if (mediumFilter.length > 0 && !mediumFilter.includes(wf.medium || "")) return false
     if (difficultyFilter.length > 0 && !difficultyFilter.includes(wf.difficulty || "")) return false
+    if (tagFilter.length > 0 && !tagFilter.some(t => (wf.tags || []).includes(t))) return false
     return true
   })
 
@@ -41,10 +47,13 @@ export default function WorkflowBrowser({ workflows }: Props) {
   const phaseGroups = groupByKey(sorted, "category", GOAL_ORDER)
   const visibleGroups = phaseGroups.filter(g => g.items.length > 0)
 
-  // Which mediums actually exist in the data
+  // Which mediums/tags actually exist in the data
   const availableMediums = MEDIUM_ORDER.filter(m =>
     workflows.some(wf => wf.medium === m)
   )
+  const availableTags = Array.from(
+    new Set(workflows.flatMap(wf => wf.tags || []))
+  ).sort()
 
   return (
     <div>
@@ -82,6 +91,25 @@ export default function WorkflowBrowser({ workflows }: Props) {
             {d}
           </button>
         ))}
+
+        {availableTags.length > 0 && (
+          <>
+            <div className="w-px h-5 bg-stone-200 mx-1" />
+            {availableTags.map(t => (
+              <button
+                key={t}
+                onClick={() => toggleTag(t)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  tagFilter.includes(t)
+                    ? "bg-stone-800 text-white border-stone-800"
+                    : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </>
+        )}
 
         {hasFilters && (
           <button

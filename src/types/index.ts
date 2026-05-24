@@ -6,6 +6,7 @@ export interface Workflow {
   category: string | null   // ministry goal: Scripture Access / Evangelism / Follow-up / Discipleship
   medium: string | null     // output medium: Text / Audio / Film / Digital / Print / In-Person / Mixed
   difficulty: string | null
+  tags: string[] | null
   created_at: string
   updated_at: string
 }

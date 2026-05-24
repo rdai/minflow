@@ -21,6 +21,7 @@ export default function WorkflowForm({ workflow }: Props) {
   const [category, setCategory] = useState(workflow?.category || "")
   const [medium, setMedium] = useState(workflow?.medium || "")
   const [difficulty, setDifficulty] = useState(workflow?.difficulty || "")
+  const [tags, setTags] = useState((workflow?.tags || []).join(", "))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -36,7 +37,8 @@ export default function WorkflowForm({ workflow }: Props) {
     setLoading(true)
     setError("")
 
-    const payload = { title, slug, description, category, medium: medium || null, difficulty, updated_at: new Date().toISOString() }
+    const parsedTags = tags.split(",").map(t => t.trim().toLowerCase()).filter(Boolean)
+    const payload = { title, slug, description, category, medium: medium || null, difficulty, tags: parsedTags, updated_at: new Date().toISOString() }
 
     if (isEdit) {
       const { error } = await supabase.from("workflows").update(payload).eq("id", workflow.id)
@@ -123,6 +125,23 @@ export default function WorkflowForm({ workflow }: Props) {
             <option value="advanced">Advanced</option>
           </select>
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-1">Tags</label>
+        <input
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+          placeholder="offline, secure, low-bandwidth, oral-learner"
+          list="tag-suggestions"
+        />
+        <datalist id="tag-suggestions">
+          {["offline", "secure", "low-bandwidth", "oral-learner", "high-security-context", "no-internet"].map(t => (
+            <option key={t} value={t} />
+          ))}
+        </datalist>
+        <p className="text-xs text-stone-400 mt-1">Comma-separated. Lowercase, no spaces.</p>
       </div>
 
       {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}
