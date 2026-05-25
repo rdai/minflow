@@ -27,11 +27,6 @@ export default function ToolNode({ data, selected }: NodeProps) {
             {d.cost_level}
           </span>
         )}
-        {d.offline_capable && (
-          <span className="text-xs px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium">
-            offline
-          </span>
-        )}
       </div>
       <Handle type="source" position={Position.Right} className="!bg-emerald-400" />
     </div>

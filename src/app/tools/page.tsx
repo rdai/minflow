@@ -2,7 +2,7 @@ import { getTools } from "@/lib/queries"
 import { groupByCategory, TOOL_CATEGORY_ORDER } from "@/lib/categories"
 import { CATEGORY_ICONS, CATEGORY_COLORS } from "@/lib/category-display"
 import Link from "next/link"
-import { ExternalLink, Wifi, WifiOff, Globe } from "lucide-react"
+import { ExternalLink, Globe } from "lucide-react"
 import type { Tool } from "@/types"
 
 const costColors: Record<string, string> = {
@@ -91,12 +91,6 @@ export default async function ToolsPage() {
                       {tool.difficulty_level}
                     </span>
                   )}
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${
-                    tool.offline_capable ? "bg-green-50 text-green-600" : "bg-stone-100 text-stone-400"
-                  }`}>
-                    {tool.offline_capable ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-                    {tool.offline_capable ? "offline ok" : "online only"}
-                  </span>
                 </div>
 
                 {tool.notes && (

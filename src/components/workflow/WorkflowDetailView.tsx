@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowRight, ExternalLink, Wifi, Maximize2, Kanban } from "lucide-react"
+import { ArrowRight, ExternalLink, Maximize2, Kanban } from "lucide-react"
 import WorkflowGraph from "@/components/graph/WorkflowGraph"
 import ContactOwnerButton from "@/components/workflow/ContactOwnerButton"
 import CloneButton from "@/components/workflow/CloneButton"
@@ -298,7 +298,6 @@ function ToolChip({ st }: { st: any }) {
           {st.tool.cost_level}
         </span>
       )}
-      {st.tool.offline_capable && <Wifi className="w-3 h-3 text-stone-400" />}
     </div>
   )
 }

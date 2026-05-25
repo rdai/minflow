@@ -1,6 +1,6 @@
 "use client"
 
-import { X, ExternalLink, Wifi, WifiOff, DollarSign } from "lucide-react"
+import { X, ExternalLink, DollarSign } from "lucide-react"
 import Link from "next/link"
 import type { Node } from "@xyflow/react"
 import type { Workflow } from "@/types"
@@ -71,12 +71,6 @@ export default function NodePanel({ node, allWorkflows, onClose }: Props) {
                   {data.difficulty_level}
                 </span>
               )}
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1 ${
-                data.offline_capable ? "bg-green-100 text-green-700" : "bg-stone-100 text-stone-500"
-              }`}>
-                {data.offline_capable ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-                {data.offline_capable ? "Works offline" : "Requires internet"}
-              </span>
             </div>
 
             {data.notes && (
