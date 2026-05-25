@@ -15,22 +15,27 @@ export async function POST(req: NextRequest) {
 
   const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://minflow.gospelresources.org'}/accept-invite`
 
-  // Try generateLink first — works for both new and already-invited users
-  const { error: linkError } = await adminClient.auth.admin.generateLink({
+  // generateLink creates a fresh OTP and returns the action link — works for new and re-invited users
+  const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
     type: 'invite',
     email,
     options: { redirectTo },
   })
 
-  if (linkError) {
-    // Fall back to inviteUserByEmail for truly new users if generateLink fails
-    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, { redirectTo })
-    if (inviteError) {
-      const msg = inviteError.message.toLowerCase()
-      const alreadyExists = msg.includes('already') || msg.includes('not allowed') || msg.includes('exists')
-      if (!alreadyExists) return NextResponse.json({ error: inviteError.message }, { status: 500 })
-    }
-  }
+  if (linkError) return NextResponse.json({ error: linkError.message }, { status: 500 })
+
+  // Send email manually via Resend (generateLink does not send email itself)
+  const { Resend } = await import('resend')
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const actionLink = linkData.properties?.action_link
+  const { error: emailError } = await resend.emails.send({
+    from: 'Mission Workflow Map <noreply@gospelresources.org>',
+    to: email,
+    subject: "You're invited to Mission Workflow Map",
+    text: `You've been invited to contribute to Mission Workflow Map.\n\nAccept your invitation and set a password here:\n${actionLink}\n\nThis link expires in 24 hours.`,
+  })
+
+  if (emailError) return NextResponse.json({ error: emailError.message }, { status: 500 })
 
   // Mark request as invited
   if (requestId) {
