@@ -13,15 +13,23 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
-  // Send Supabase invite — ignore "already exists" errors
-  const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://minflow.gospelresources.org'}/accept-invite`,
+  const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://minflow.gospelresources.org'}/accept-invite`
+
+  // Try generateLink first — works for both new and already-invited users
+  const { error: linkError } = await adminClient.auth.admin.generateLink({
+    type: 'invite',
+    email,
+    options: { redirectTo },
   })
-  if (inviteError) {
-    const msg = inviteError.message.toLowerCase()
-    const alreadyExists = msg.includes('already') || msg.includes('not allowed') || msg.includes('exists')
-    if (!alreadyExists) return NextResponse.json({ error: inviteError.message }, { status: 500 })
-    // User already has an account — still mark request as approved
+
+  if (linkError) {
+    // Fall back to inviteUserByEmail for truly new users if generateLink fails
+    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, { redirectTo })
+    if (inviteError) {
+      const msg = inviteError.message.toLowerCase()
+      const alreadyExists = msg.includes('already') || msg.includes('not allowed') || msg.includes('exists')
+      if (!alreadyExists) return NextResponse.json({ error: inviteError.message }, { status: 500 })
+    }
   }
 
   // Mark request as invited
