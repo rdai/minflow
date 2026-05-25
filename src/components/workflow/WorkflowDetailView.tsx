@@ -89,18 +89,29 @@ export default function WorkflowDetailView({
                 {workflow.category}
               </span>
             )}
+            {workflow.verified && (
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                ✓ Verified
+              </span>
+            )}
+            {(workflow.tags || []).map(tag => (
+              <span key={tag} className="text-xs px-2.5 py-1 rounded-full font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                #{tag}
+              </span>
+            ))}
           </div>
           {workflow.description && (
             <p className="text-stone-600 text-lg leading-relaxed max-w-3xl">{workflow.description}</p>
           )}
-          {workflow.contact_enabled && (
-            <div className="mt-4">
-              <ContactOwnerButton workflowId={workflow.id} workflowTitle={workflow.title} />
+          {!workflow.verified && (
+            <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm text-amber-800 max-w-xl">
+              <span className="shrink-0 mt-0.5">⚠️</span>
+              <span>Community contribution — not yet reviewed by our team. Processes may vary.</span>
             </div>
           )}
         </div>
 
-        {/* Controls: layout toggle + clone */}
+        {/* Controls: all actions right-aligned */}
         <div className="shrink-0 flex flex-col items-end gap-2">
           <div className="flex items-center gap-2 bg-stone-100 rounded-xl p-1.5">
             {layoutButtons.map(btn => (
@@ -120,6 +131,9 @@ export default function WorkflowDetailView({
             ))}
           </div>
           {isLoggedIn && <CloneButton workflowId={workflow.id} />}
+          {workflow.contact_enabled && (
+            <ContactOwnerButton workflowId={workflow.id} workflowTitle={workflow.title} />
+          )}
         </div>
       </div>
 

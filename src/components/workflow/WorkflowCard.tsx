@@ -26,16 +26,31 @@ export default function WorkflowCard({ workflow, icon, colorClass, badge }: Prop
           {icon}
           <h3 className="font-semibold text-base leading-tight">{workflow.title}</h3>
         </div>
-        {badge && (
-          <span className="text-xs font-medium bg-white/60 px-2 py-0.5 rounded-full opacity-70 shrink-0 whitespace-nowrap">
-            {badge}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {badge && (
+            <span className="text-xs font-medium bg-white/60 px-2 py-0.5 rounded-full opacity-70 whitespace-nowrap">
+              {badge}
+            </span>
+          )}
+          {workflow.verified
+            ? <span className="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full whitespace-nowrap">✓ Verified</span>
+            : <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full whitespace-nowrap">Community</span>
+          }
+        </div>
       </div>
       {workflow.description && (
         <p className="text-sm opacity-80 leading-relaxed line-clamp-2 mb-3">
           {workflow.description}
         </p>
+      )}
+      {(workflow.tags || []).length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {(workflow.tags || []).map(tag => (
+            <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-white/50 opacity-70 font-medium">
+              #{tag}
+            </span>
+          ))}
+        </div>
       )}
       <div className="flex items-center justify-between">
         {workflow.difficulty && (

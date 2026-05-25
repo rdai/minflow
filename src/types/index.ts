@@ -11,6 +11,7 @@ export interface Workflow {
   status: 'draft' | 'published'
   is_clone_of: string | null
   contact_enabled: boolean
+  verified: boolean
   created_at: string
   updated_at: string
 }

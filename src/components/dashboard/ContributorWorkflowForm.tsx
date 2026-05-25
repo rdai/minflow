@@ -7,13 +7,14 @@ import type { Workflow } from "@/types"
 
 interface Props {
   workflow?: Workflow
+  isAdmin?: boolean
 }
 
 function slugify(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
 }
 
-export default function ContributorWorkflowForm({ workflow }: Props) {
+export default function ContributorWorkflowForm({ workflow, isAdmin }: Props) {
   const isEdit = !!workflow
   const [title, setTitle] = useState(workflow?.title || "")
   const [slug, setSlug] = useState(workflow?.slug || "")
@@ -23,6 +24,7 @@ export default function ContributorWorkflowForm({ workflow }: Props) {
   const [difficulty, setDifficulty] = useState(workflow?.difficulty || "")
   const [tags, setTags] = useState((workflow?.tags || []).join(", "))
   const [contactEnabled, setContactEnabled] = useState(workflow?.contact_enabled || false)
+  const [verified, setVerified] = useState(workflow?.verified || false)
   const [status, setStatus] = useState<'draft' | 'published'>(workflow?.status || "draft")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -43,6 +45,7 @@ export default function ContributorWorkflowForm({ workflow }: Props) {
     const payload = {
       title, slug, description, category, medium: medium || null,
       difficulty, tags: parsedTags, contact_enabled: contactEnabled,
+      ...(isAdmin ? { verified } : {}),
       status, updated_at: new Date().toISOString()
     }
 
@@ -180,6 +183,20 @@ export default function ContributorWorkflowForm({ workflow }: Props) {
           <span className="text-sm text-stone-700">Allow visitors to contact me about this workflow</span>
         </label>
       </div>
+
+      {isAdmin && (
+        <div className="flex items-center gap-3 pt-1 border-t border-stone-100">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={verified}
+              onChange={(e) => setVerified(e.target.checked)}
+              className="rounded border-stone-300 text-emerald-600"
+            />
+            <span className="text-sm text-stone-700 font-medium">✓ Mark as verified <span className="text-stone-400 font-normal">(team-reviewed process)</span></span>
+          </label>
+        </div>
+      )}
 
       {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}
 

@@ -57,7 +57,7 @@ export default async function EditWorkflowPage({ params }: { params: Promise<{ i
       <div className="space-y-10">
         <section>
           <h2 className="text-lg font-bold text-stone-900 mb-4">Workflow Details</h2>
-          <ContributorWorkflowForm workflow={wf as Workflow} />
+          <ContributorWorkflowForm workflow={wf as Workflow} isAdmin={admin} />
         </section>
 
         <section>
