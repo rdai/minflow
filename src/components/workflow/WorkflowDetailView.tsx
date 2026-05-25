@@ -93,31 +93,33 @@ export default function WorkflowDetailView({
           {workflow.description && (
             <p className="text-stone-600 text-lg leading-relaxed max-w-3xl">{workflow.description}</p>
           )}
-          <div className="flex items-center gap-2 mt-4">
-            {workflow.contact_enabled && (
+          {workflow.contact_enabled && (
+            <div className="mt-4">
               <ContactOwnerButton workflowId={workflow.id} workflowTitle={workflow.title} />
-            )}
-            {isLoggedIn && <CloneButton workflowId={workflow.id} />}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Layout toggle */}
-        <div className="shrink-0 flex items-center gap-2 bg-stone-100 rounded-xl p-1.5">
-          {layoutButtons.map(btn => (
-            <button
-              key={btn.id}
-              onClick={() => switchLayout(btn.id)}
-              title={btn.label}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                layout === btn.id
-                  ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                  : "text-stone-500 hover:text-stone-800 hover:bg-stone-50"
-              }`}
-            >
-              {btn.icon}
-              {btn.label}
-            </button>
-          ))}
+        {/* Controls: layout toggle + clone */}
+        <div className="shrink-0 flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2 bg-stone-100 rounded-xl p-1.5">
+            {layoutButtons.map(btn => (
+              <button
+                key={btn.id}
+                onClick={() => switchLayout(btn.id)}
+                title={btn.label}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  layout === btn.id
+                    ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                    : "text-stone-500 hover:text-stone-800 hover:bg-stone-50"
+                }`}
+              >
+                {btn.icon}
+                {btn.label}
+              </button>
+            ))}
+          </div>
+          {isLoggedIn && <CloneButton workflowId={workflow.id} />}
         </div>
       </div>
 

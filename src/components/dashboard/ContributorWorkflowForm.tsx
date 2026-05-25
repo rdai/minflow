@@ -135,7 +135,28 @@ export default function ContributorWorkflowForm({ workflow }: Props) {
         <label className="block text-sm font-medium text-stone-700 mb-1">Tags</label>
         <input
           value={tags}
-          onChange={(e) => setTags(e.target.value)}
+          onChange={(e) => {
+            // Auto-normalize: lowercase, remove spaces within each tag
+            const raw = e.target.value
+            // Preserve trailing comma/space while typing (normalize per-segment)
+            const normalized = raw
+              .split(",")
+              .map((t, i, arr) =>
+                // Don't aggressively strip the last segment while user is still typing
+                i === arr.length - 1 ? t.toLowerCase() : t.trim().toLowerCase().replace(/\s+/g, "")
+              )
+              .join(", ")
+            setTags(normalized)
+          }}
+          onBlur={(e) => {
+            // Full normalize on blur
+            const normalized = e.target.value
+              .split(",")
+              .map(t => t.trim().toLowerCase().replace(/\s+/g, ""))
+              .filter(Boolean)
+              .join(", ")
+            setTags(normalized)
+          }}
           className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
           placeholder="offline, secure, low-bandwidth"
           list="tag-suggestions"
@@ -145,7 +166,7 @@ export default function ContributorWorkflowForm({ workflow }: Props) {
             <option key={t} value={t} />
           ))}
         </datalist>
-        <p className="text-xs text-stone-400 mt-1">Comma-separated.</p>
+        <p className="text-xs text-stone-400 mt-1">Comma-separated · auto-lowercased, no spaces.</p>
       </div>
 
       <div className="flex items-center gap-3 pt-1">
