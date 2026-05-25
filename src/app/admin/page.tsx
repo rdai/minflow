@@ -8,7 +8,7 @@ export default async function AdminPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/admin/login")
+    redirect("/login")
   }
 
   // Quick counts
