@@ -15,13 +15,26 @@ export default function AcceptInviteForm() {
   const supabase = createClient()
 
   useEffect(() => {
-    // Check if Supabase already processed the hash before listener registered
+    // @supabase/ssr doesn't auto-parse hash tokens — do it manually
+    const hash = window.location.hash
+    if (hash.includes('access_token')) {
+      const params = new URLSearchParams(hash.substring(1))
+      const access_token = params.get('access_token')
+      const refresh_token = params.get('refresh_token')
+      if (access_token && refresh_token) {
+        supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+          if (!error) setReady(true)
+        })
+        return
+      }
+    }
+
+    // Fallback: check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) setReady(true)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      // SIGNED_IN fires when invite link is clicked
       if (event === "SIGNED_IN" || event === "PASSWORD_RECOVERY") {
         setReady(true)
       }
