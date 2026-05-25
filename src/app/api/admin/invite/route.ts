@@ -14,7 +14,9 @@ export async function POST(req: NextRequest) {
   const adminClient = createAdminClient()
 
   // Send Supabase invite — ignore "already exists" errors
-  const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email)
+  const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://minflow.gospelresources.org'}/accept-invite`,
+  })
   if (inviteError) {
     const msg = inviteError.message.toLowerCase()
     const alreadyExists = msg.includes('already') || msg.includes('not allowed') || msg.includes('exists')
