@@ -113,7 +113,7 @@ export default function WorkflowDetailView({
 
         {/* Controls: all actions right-aligned */}
         <div className="shrink-0 flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2 bg-stone-100 rounded-xl p-1.5">
+          <div className="flex items-center gap-2 bg-stone-50 border border-stone-300 rounded-xl p-1.5 shadow-sm">
             {layoutButtons.map(btn => (
               <button
                 key={btn.id}

@@ -31,7 +31,7 @@ export default function ContactOwnerButton({ workflowId, workflowTitle }: { work
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-700 border border-stone-200 rounded-lg px-3 py-2 hover:bg-stone-50 transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-stone-700 hover:text-stone-900 border border-stone-300 bg-stone-50 hover:bg-stone-100 rounded-lg px-3 py-2 transition-colors shadow-sm"
       >
         <Mail className="w-4 h-4" /> Contact owner
       </button>

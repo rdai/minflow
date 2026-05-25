@@ -24,7 +24,7 @@ export default function CloneButton({ workflowId }: { workflowId: string }) {
     <button
       onClick={handleClone}
       disabled={loading}
-      className="flex items-center gap-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl px-4 py-2.5 transition-colors disabled:opacity-60"
+      className="flex items-center gap-2 text-sm font-medium text-stone-700 hover:text-stone-900 border border-stone-300 bg-stone-50 hover:bg-stone-100 rounded-lg px-3 py-2 transition-colors disabled:opacity-60 shadow-sm"
     >
       <Copy className="w-4 h-4" /> {loading ? "Cloning..." : "Clone workflow"}
     </button>
