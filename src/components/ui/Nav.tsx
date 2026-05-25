@@ -6,6 +6,7 @@ import { Map, Settings, LayoutDashboard } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useEffect, useState } from "react"
 import type { User } from "@supabase/supabase-js"
+import FeedbackButton from "@/components/ui/FeedbackButton"
 
 export default function Nav() {
   const pathname = usePathname()
@@ -71,6 +72,8 @@ export default function Nav() {
                 Contribute
               </Link>
             )}
+
+            <FeedbackButton />
 
             {user ? (
               <Link
