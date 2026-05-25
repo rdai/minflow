@@ -4,9 +4,12 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getWorkflow, getStepsWithTools, getWorkflowInputs, getWorkflowOutputs, getWorkflowLinks, getWorkflows, getOutgoingLinks, getIncomingLinks } from "@/lib/queries"
 import WorkflowGraph from "@/components/graph/WorkflowGraph"
+import ContactOwnerButton from "@/components/workflow/ContactOwnerButton"
+import CloneButton from "@/components/workflow/CloneButton"
 import { ArrowRight, ChevronRight, ExternalLink, Wifi, WifiOff } from "lucide-react"
 import Link from "next/link"
 import type { Workflow } from "@/types"
+import { getSession } from "@/lib/auth"
 
 const difficultyColors: Record<string, string> = {
   beginner: "bg-green-100 text-green-700",
@@ -42,7 +45,7 @@ export default async function WorkflowDetailPage({
     notFound()
   }
 
-  const [steps, inputs, outputs, links, allWorkflows, outgoing, incoming] = await Promise.all([
+  const [steps, inputs, outputs, links, allWorkflows, outgoing, incoming, session] = await Promise.all([
     getStepsWithTools(workflow.id),
     getWorkflowInputs(workflow.id),
     getWorkflowOutputs(workflow.id),
@@ -50,6 +53,7 @@ export default async function WorkflowDetailPage({
     getWorkflows(),
     getOutgoingLinks(workflow.id),
     getIncomingLinks(workflow.id),
+    getSession(),
   ])
 
   const costColors: Record<string, string> = {
@@ -85,6 +89,14 @@ export default async function WorkflowDetailPage({
         {workflow.description && (
           <p className="text-stone-600 text-lg leading-relaxed max-w-3xl">{workflow.description}</p>
         )}
+        <div className="flex items-center gap-2 mt-4">
+          {workflow.contact_enabled && (
+            <ContactOwnerButton workflowId={workflow.id} workflowTitle={workflow.title} />
+          )}
+          {session && (
+            <CloneButton workflowId={workflow.id} />
+          )}
+        </div>
       </div>
 
       {/* Two-column layout */}

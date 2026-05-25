@@ -7,6 +7,10 @@ export interface Workflow {
   medium: string | null     // output medium: Text / Audio / Film / Digital / Print / In-Person / Mixed
   difficulty: string | null
   tags: string[] | null
+  created_by: string | null
+  status: 'draft' | 'published'
+  is_clone_of: string | null
+  contact_enabled: boolean
   created_at: string
   updated_at: string
 }
@@ -46,8 +50,27 @@ export interface Tool {
   difficulty_level: 'beginner' | 'intermediate' | 'advanced' | null
   offline_capable: boolean
   notes: string | null
+  created_by: string | null
   created_at: string
   updated_at: string
+}
+
+export interface Profile {
+  id: string
+  full_name: string | null
+  org: string | null
+  is_admin: boolean
+  created_at: string
+}
+
+export interface AccessRequest {
+  id: string
+  name: string
+  email: string
+  org: string | null
+  message: string | null
+  status: 'pending' | 'invited' | 'declined'
+  created_at: string
 }
 
 export interface StepTool {

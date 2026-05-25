@@ -2,10 +2,23 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Map, BookOpen, Wrench, Settings } from "lucide-react"
+import { Map, Settings, LayoutDashboard } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { useEffect, useState } from "react"
+import type { User } from "@supabase/supabase-js"
 
 export default function Nav() {
   const pathname = usePathname()
+  const [user, setUser] = useState<User | null>(null)
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   const links = [
     { href: "/", label: "Workflows" },
@@ -37,6 +50,21 @@ export default function Nav() {
                 {link.label}
               </Link>
             ))}
+
+            {user && (
+              <Link
+                href="/dashboard"
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith("/dashboard")
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span className="hidden sm:inline">My Workflows</span>
+              </Link>
+            )}
+
             <Link
               href="/admin"
               className="ml-2 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors flex items-center gap-1"
