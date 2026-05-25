@@ -62,22 +62,24 @@ export default function AccessRequestsManager({ requests }: { requests: AccessRe
               )}
               <p className="text-xs text-stone-400 mt-2">{new Date(req.created_at).toLocaleDateString()}</p>
             </div>
-            {req.status === "pending" && (
+            {(req.status === "pending" || req.status === "declined") && (
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => invite(req)}
                   disabled={loading === req.id}
                   className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
                 >
-                  {loading === req.id ? "Sending..." : "Invite"}
+                  {loading === req.id ? "Sending..." : "Approve"}
                 </button>
-                <button
-                  onClick={() => decline(req)}
-                  disabled={loading === req.id}
-                  className="text-stone-500 text-sm px-4 py-2 rounded-lg hover:bg-stone-100 transition-colors"
-                >
-                  Decline
-                </button>
+                {req.status === "pending" && (
+                  <button
+                    onClick={() => decline(req)}
+                    disabled={loading === req.id}
+                    className="text-stone-500 text-sm px-4 py-2 rounded-lg hover:bg-stone-100 transition-colors"
+                  >
+                    Decline
+                  </button>
+                )}
               </div>
             )}
           </div>

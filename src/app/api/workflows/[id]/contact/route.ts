@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -22,7 +23,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!wf || !wf.contact_enabled) return NextResponse.json({ error: 'Contact not enabled' }, { status: 403 })
   if (!wf.created_by) return NextResponse.json({ error: 'No owner' }, { status: 404 })
 
-  const { data: { user: owner } } = await supabase.auth.admin.getUserById(wf.created_by)
+  const adminClient = createAdminClient()
+  const { data: { user: owner } } = await adminClient.auth.admin.getUserById(wf.created_by)
   if (!owner?.email) return NextResponse.json({ error: 'Owner not found' }, { status: 404 })
 
   const { error } = await resend.emails.send({
