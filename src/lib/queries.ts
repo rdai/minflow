@@ -6,6 +6,7 @@ export async function getWorkflows() {
   const { data, error } = await supabase
     .from('workflows')
     .select('*')
+    .eq('status', 'published')
     .order('category', { ascending: true })
     .order('title', { ascending: true })
   if (error) throw error

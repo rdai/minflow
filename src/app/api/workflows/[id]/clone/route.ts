@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import type { Workflow, WorkflowStep } from '@/types'
+import type { Workflow, WorkflowStep, WorkflowInput, WorkflowOutput, WorkflowLink } from '@/types'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -76,6 +76,55 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
         }
       }
     }
+  }
+
+  // Clone inputs
+  const { data: inputs } = await supabase
+    .from('workflow_inputs')
+    .select('*')
+    .eq('workflow_id', id)
+
+  if (inputs && inputs.length > 0) {
+    await supabase.from('workflow_inputs').insert(
+      (inputs as WorkflowInput[]).map(i => ({
+        workflow_id: clone.id,
+        title: i.title,
+        description: i.description,
+      }))
+    )
+  }
+
+  // Clone outputs
+  const { data: outputs } = await supabase
+    .from('workflow_outputs')
+    .select('*')
+    .eq('workflow_id', id)
+
+  if (outputs && outputs.length > 0) {
+    await supabase.from('workflow_outputs').insert(
+      (outputs as WorkflowOutput[]).map(o => ({
+        workflow_id: clone.id,
+        title: o.title,
+        description: o.description,
+      }))
+    )
+  }
+
+  // Clone outgoing workflow links (source = this workflow)
+  const { data: links } = await supabase
+    .from('workflow_links')
+    .select('*')
+    .eq('source_workflow_id', id)
+
+  if (links && links.length > 0) {
+    await supabase.from('workflow_links').insert(
+      (links as WorkflowLink[]).map(l => ({
+        source_workflow_id: clone.id,
+        target_workflow_id: l.target_workflow_id,
+        relationship_type: l.relationship_type,
+        description: l.description,
+      }))
+    )
   }
 
   return NextResponse.json({ id: clone.id })

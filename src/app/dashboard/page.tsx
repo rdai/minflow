@@ -3,6 +3,7 @@ import { getProfile } from '@/lib/auth'
 import Link from 'next/link'
 import type { Workflow } from '@/types'
 import { PlusCircle, Copy } from 'lucide-react'
+import WorkflowList from '@/components/dashboard/WorkflowList'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -81,42 +82,3 @@ export default async function DashboardPage() {
   )
 }
 
-function WorkflowList({ workflows }: { workflows: Workflow[] }) {
-  return (
-    <div className="space-y-2">
-      {workflows.map(wf => (
-        <div key={wf.id} className="bg-white border border-stone-200 rounded-xl p-4 flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <h3 className="font-medium text-stone-900 truncate">{wf.title}</h3>
-            {wf.description && (
-              <p className="text-sm text-stone-500 truncate mt-0.5">{wf.description}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
-              wf.status === 'published'
-                ? 'bg-green-50 text-green-700 border-green-200'
-                : 'bg-stone-50 text-stone-500 border-stone-200'
-            }`}>
-              {wf.status}
-            </span>
-            <Link
-              href={`/dashboard/workflows/${wf.id}/edit`}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Edit
-            </Link>
-            {wf.status === 'published' && (
-              <Link
-                href={`/workflows/${wf.slug}`}
-                className="text-sm text-stone-500 hover:underline"
-              >
-                View
-              </Link>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
