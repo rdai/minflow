@@ -27,7 +27,7 @@ export default async function AdminWorkflowsPage() {
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-stone-900">Workflows</h1>
         <Link
-          href="/admin/workflows/new"
+          href="/dashboard/workflows/new"
           className="flex items-center gap-2 bg-blue-600 text-white font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm"
         >
           <Plus className="w-4 h-4" />
@@ -58,7 +58,7 @@ export default async function AdminWorkflowsPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href={`/admin/workflows/${wf.id}/edit`}
+                href={`/dashboard/workflows/${wf.id}/edit`}
                 className="text-stone-400 hover:text-blue-600 p-1.5 rounded-lg hover:bg-blue-50"
                 title="Edit"
               >

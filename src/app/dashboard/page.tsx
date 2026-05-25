@@ -1,22 +1,42 @@
 import { createClient } from '@/lib/supabase/server'
-import { getProfile } from '@/lib/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getProfile, isAdmin } from '@/lib/auth'
 import Link from 'next/link'
 import type { Workflow } from '@/types'
 import { PlusCircle, Copy } from 'lucide-react'
 import WorkflowList from '@/components/dashboard/WorkflowList'
 
+export type CreatorInfo = { name: string | null; email: string | null }
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const profile = await getProfile()
+  const admin = await isAdmin()
 
   const { data: { user } } = await supabase.auth.getUser()
-  const { data } = await supabase
-    .from('workflows')
-    .select('*')
-    .eq('created_by', user!.id)
-    .order('updated_at', { ascending: false })
+
+  // Admin sees all workflows; contributors see only their own
+  const query = supabase.from('workflows').select('*').order('updated_at', { ascending: false })
+  if (!admin) query.eq('created_by', user!.id)
+  const { data } = await query
 
   const workflows = (data || []) as Workflow[]
+
+  // For admin: build creator map (name + email) keyed by user id
+  let creatorMap: Record<string, CreatorInfo> = {}
+  if (admin && workflows.length > 0) {
+    const ids = [...new Set(workflows.map(w => w.created_by).filter(Boolean))] as string[]
+    const adminClient = createAdminClient()
+    const [profilesRes, usersRes] = await Promise.all([
+      supabase.from('profiles').select('id, full_name').in('id', ids),
+      adminClient.auth.admin.listUsers({ perPage: 1000 }),
+    ])
+    const nameById = Object.fromEntries((profilesRes.data || []).map(p => [p.id, p.full_name]))
+    const emailById = Object.fromEntries((usersRes.data?.users || []).map(u => [u.id, u.email]))
+    ids.forEach(id => {
+      creatorMap[id] = { name: nameById[id] ?? null, email: emailById[id] ?? null }
+    })
+  }
   const drafts = workflows.filter(w => w.status === 'draft')
   const published = workflows.filter(w => w.status === 'published')
 
@@ -24,7 +44,7 @@ export default async function DashboardPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">My Workflows</h1>
+          <h1 className="text-2xl font-bold text-stone-900">{admin ? "All Workflows" : "My Workflows"}</h1>
           <p className="text-stone-500 text-sm mt-1">
             Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}
             {profile?.org ? ` · ${profile.org}` : ""}
@@ -65,7 +85,7 @@ export default async function DashboardPage() {
               <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">
                 Drafts ({drafts.length})
               </h2>
-              <WorkflowList workflows={drafts} />
+              <WorkflowList workflows={drafts} isAdmin={admin} creatorMap={creatorMap} />
             </section>
           )}
           {published.length > 0 && (
@@ -73,7 +93,7 @@ export default async function DashboardPage() {
               <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">
                 Published ({published.length})
               </h2>
-              <WorkflowList workflows={published} />
+              <WorkflowList workflows={published} isAdmin={admin} creatorMap={creatorMap} />
             </section>
           )}
         </div>

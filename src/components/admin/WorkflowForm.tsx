@@ -22,6 +22,7 @@ export default function WorkflowForm({ workflow }: Props) {
   const [medium, setMedium] = useState(workflow?.medium || "")
   const [difficulty, setDifficulty] = useState(workflow?.difficulty || "")
   const [tags, setTags] = useState((workflow?.tags || []).join(", "))
+  const [contactEnabled, setContactEnabled] = useState(workflow?.contact_enabled || false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -38,7 +39,7 @@ export default function WorkflowForm({ workflow }: Props) {
     setError("")
 
     const parsedTags = tags.split(",").map(t => t.trim().toLowerCase()).filter(Boolean)
-    const payload = { title, slug, description, category, medium: medium || null, difficulty, tags: parsedTags, updated_at: new Date().toISOString() }
+    const payload = { title, slug, description, category, medium: medium || null, difficulty, tags: parsedTags, contact_enabled: contactEnabled, updated_at: new Date().toISOString() }
 
     if (isEdit) {
       const { error } = await supabase.from("workflows").update(payload).eq("id", workflow.id)
@@ -142,6 +143,18 @@ export default function WorkflowForm({ workflow }: Props) {
           ))}
         </datalist>
         <p className="text-xs text-stone-400 mt-1">Comma-separated. Lowercase, no spaces.</p>
+      </div>
+
+      <div className="flex items-center gap-3 pt-1">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={contactEnabled}
+            onChange={(e) => setContactEnabled(e.target.checked)}
+            className="rounded border-stone-300 text-blue-600"
+          />
+          <span className="text-sm text-stone-700">Allow visitors to contact owner about this workflow</span>
+        </label>
       </div>
 
       {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}

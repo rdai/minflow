@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { isAdmin } from '@/lib/auth'
 import { notFound, redirect } from 'next/navigation'
 import type { Workflow } from '@/types'
 import ContributorWorkflowForm from '@/components/dashboard/ContributorWorkflowForm'
@@ -7,12 +8,13 @@ export default async function EditWorkflowPage({ params }: { params: Promise<{ i
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const admin = await isAdmin()
 
   const { data } = await supabase.from('workflows').select('*').eq('id', id).single()
   if (!data) notFound()
 
   const workflow = data as Workflow
-  if (workflow.created_by !== user!.id) redirect('/dashboard')
+  if (!admin && workflow.created_by !== user!.id) redirect('/dashboard')
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">

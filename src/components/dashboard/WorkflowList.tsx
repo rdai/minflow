@@ -5,8 +5,13 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Trash2 } from "lucide-react"
 import type { Workflow } from "@/types"
+import type { CreatorInfo } from "@/app/dashboard/page"
 
-export default function WorkflowList({ workflows }: { workflows: Workflow[] }) {
+export default function WorkflowList({ workflows, isAdmin, creatorMap = {} }: {
+  workflows: Workflow[]
+  isAdmin?: boolean
+  creatorMap?: Record<string, CreatorInfo>
+}) {
   const router = useRouter()
   const [deleting, setDeleting] = useState<string | null>(null)
 
@@ -29,7 +34,15 @@ export default function WorkflowList({ workflows }: { workflows: Workflow[] }) {
         <div key={wf.id} className="bg-white border border-stone-200 rounded-xl p-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <h3 className="font-medium text-stone-900 truncate">{wf.title}</h3>
-            {wf.description && (
+            {isAdmin && wf.created_by && (() => {
+              const c = creatorMap[wf.created_by]
+              return (
+                <p className="text-xs text-stone-400 truncate mt-0.5">
+                  {c?.name ?? "Unknown"}{c?.email ? ` · ${c.email}` : ""}
+                </p>
+              )
+            })()}
+            {!isAdmin && wf.description && (
               <p className="text-sm text-stone-500 truncate mt-0.5">{wf.description}</p>
             )}
           </div>
