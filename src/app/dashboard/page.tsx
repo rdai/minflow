@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/auth'
 import Link from 'next/link'
 import type { Workflow } from '@/types'
-import { PlusCircle } from 'lucide-react'
+import { PlusCircle, Copy } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -29,12 +29,25 @@ export default async function DashboardPage() {
             {profile?.org ? ` · ${profile.org}` : ""}
           </p>
         </div>
-        <Link
-          href="/dashboard/workflows/new"
-          className="flex items-center gap-2 bg-blue-600 text-white font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm"
-        >
-          <PlusCircle className="w-4 h-4" /> New Workflow
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/workflows"
+            className="flex items-center gap-2 bg-green-600 text-white font-semibold px-4 py-2.5 rounded-xl hover:bg-green-700 transition-colors text-sm"
+          >
+            <Copy className="w-4 h-4" /> Clone Existing Flow
+          </Link>
+          <Link
+            href="/dashboard/workflows/new"
+            className="flex items-center gap-2 bg-blue-600 text-white font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm"
+          >
+            <PlusCircle className="w-4 h-4" /> New Workflow
+          </Link>
+        </div>
+      </div>
+
+      <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-6 text-sm text-green-800">
+        <span className="font-semibold">Tip:</span> Browse existing workflows and click{" "}
+        <span className="font-semibold">Clone workflow</span> to copy one into your drafts — great starting point for adapting to your ministry context.
       </div>
 
       {workflows.length === 0 ? (
