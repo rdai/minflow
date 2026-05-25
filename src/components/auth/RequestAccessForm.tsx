@@ -7,6 +7,7 @@ export default function RequestAccessForm() {
   const [email, setEmail] = useState("")
   const [org, setOrg] = useState("")
   const [message, setMessage] = useState("")
+  const [referral, setReferral] = useState("")
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState("")
@@ -19,7 +20,7 @@ export default function RequestAccessForm() {
     const res = await fetch("/api/request-access", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, org, message }),
+      body: JSON.stringify({ name, email, org, message, referral }),
     })
     const json = await res.json()
 
@@ -39,7 +40,7 @@ export default function RequestAccessForm() {
         <div className="text-3xl mb-3">✓</div>
         <h2 className="font-semibold text-stone-900 mb-2">Request received</h2>
         <p className="text-stone-500 text-sm">
-          We'll review your request and send an invite link to <strong>{email}</strong>.
+          We'll review your request and if approved, you will receive an invite link to <strong>{email}</strong>.
         </p>
       </div>
     )
@@ -75,6 +76,15 @@ export default function RequestAccessForm() {
           onChange={(e) => setOrg(e.target.value)}
           className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
           placeholder="Wycliffe, IMB, SIL..."
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-1">How did you hear about this?</label>
+        <input
+          value={referral}
+          onChange={(e) => setReferral(e.target.value)}
+          className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+          placeholder="A colleague, conference, social media..."
         />
       </div>
       <div>

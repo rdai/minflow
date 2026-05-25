@@ -3,13 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 
 export async function POST(req: NextRequest) {
-  const { name, email, org, message } = await req.json()
+  const { name, email, org, message, referral } = await req.json()
   if (!name || !email) return NextResponse.json({ error: 'Name and email required' }, { status: 400 })
 
   const supabase = await createClient()
   const { error } = await supabase
     .from('access_requests')
-    .insert({ name, email, org: org || null, message: message || null })
+    .insert({ name, email, org: org || null, message: message || null, referral: referral || null })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
 Name: ${name}
 Email: ${email}
 Org: ${org || '—'}
+Heard via: ${referral || '—'}
 
 Message:
 ${message || '—'}

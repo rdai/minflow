@@ -68,6 +68,7 @@ export interface AccessRequest {
   name: string
   email: string
   org: string | null
+  referral: string | null
   message: string | null
   status: 'pending' | 'invited' | 'declined'
   created_at: string

@@ -56,7 +56,7 @@ export default function AccessRequestsManager({ requests }: { requests: AccessRe
                   {req.status}
                 </span>
               </div>
-              <p className="text-sm text-stone-500">{req.email}{req.org ? ` · ${req.org}` : ""}</p>
+              <p className="text-sm text-stone-500">{req.email}{req.org ? ` · ${req.org}` : ""}{req.referral ? ` · via ${req.referral}` : ""}</p>
               {req.message && (
                 <p className="text-sm text-stone-600 mt-2 bg-stone-50 rounded-lg p-3">{req.message}</p>
               )}
