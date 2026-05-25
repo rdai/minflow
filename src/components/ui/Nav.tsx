@@ -68,7 +68,7 @@ export default function Nav() {
                 href="/request-access"
                 className="ml-1 px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
               >
-                Contribute!
+                Contribute!!
               </Link>
             )}
 
