@@ -15,6 +15,11 @@ export default function AcceptInviteForm() {
   const supabase = createClient()
 
   useEffect(() => {
+    // Check if Supabase already processed the hash before listener registered
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true)
+    })
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       // SIGNED_IN fires when invite link is clicked
       if (event === "SIGNED_IN" || event === "PASSWORD_RECOVERY") {
