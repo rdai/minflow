@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 
 export default function RequestAccessForm() {
   const [name, setName] = useState("")
@@ -11,19 +10,21 @@ export default function RequestAccessForm() {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState("")
-  const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError("")
 
-    const { error } = await supabase
-      .from("access_requests")
-      .insert({ name, email, org: org || null, message: message || null })
+    const res = await fetch("/api/request-access", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, org, message }),
+    })
+    const json = await res.json()
 
-    if (error) {
-      setError(error.message)
+    if (!res.ok) {
+      setError(json.error || "Something went wrong")
       setLoading(false)
       return
     }

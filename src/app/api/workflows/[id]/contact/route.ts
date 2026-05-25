@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { senderName, senderEmail, message } = await req.json()
@@ -12,6 +10,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'All fields required' }, { status: 400 })
   }
 
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const supabase = await createClient()
 
   const { data: wf } = await supabase

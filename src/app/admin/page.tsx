@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { Settings, BookOpen, Wrench, ArrowRight, LogOut } from "lucide-react"
+import { Settings, BookOpen, Wrench, ArrowRight, LogOut, Users } from "lucide-react"
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -12,14 +12,16 @@ export default async function AdminPage() {
   }
 
   // Quick counts
-  let workflowCount = 0, toolCount = 0
+  let workflowCount = 0, toolCount = 0, requestCount = 0
   try {
-    const [wf, tl] = await Promise.all([
+    const [wf, tl, rq] = await Promise.all([
       supabase.from("workflows").select("id", { count: "exact", head: true }),
       supabase.from("tools").select("id", { count: "exact", head: true }),
+      supabase.from("access_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
     ])
     workflowCount = wf.count || 0
     toolCount = tl.count || 0
+    requestCount = rq.count || 0
   } catch {}
 
   return (
@@ -71,6 +73,27 @@ export default async function AdminPage() {
           <p className="text-stone-500 text-sm mb-4">Manage tools and attach them to workflow steps</p>
           <div className="text-2xl font-bold text-emerald-600">{toolCount}</div>
           <div className="text-xs text-stone-400">tools in database</div>
+        </Link>
+
+        <Link
+          href="/admin/requests"
+          className="block border border-stone-200 rounded-xl p-6 bg-white hover:shadow-md hover:border-violet-200 transition-all group col-span-1 sm:col-span-2"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="bg-violet-50 text-violet-600 p-3 rounded-xl">
+              <Users className="w-6 h-6" />
+            </div>
+            <div className="flex items-center gap-2">
+              {requestCount > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {requestCount} pending
+                </span>
+              )}
+              <ArrowRight className="w-5 h-5 text-stone-300 group-hover:text-violet-400 transition-colors" />
+            </div>
+          </div>
+          <h2 className="text-xl font-bold text-stone-900 mb-1">Access Requests</h2>
+          <p className="text-stone-500 text-sm">Review and invite contributors</p>
         </Link>
       </div>
 
