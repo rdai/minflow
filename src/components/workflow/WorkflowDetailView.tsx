@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowRight, ExternalLink, Wifi, LayoutTemplate, Maximize2, Kanban } from "lucide-react"
+import { ArrowRight, ExternalLink, Wifi, Maximize2, Kanban } from "lucide-react"
 import WorkflowGraph from "@/components/graph/WorkflowGraph"
 import ContactOwnerButton from "@/components/workflow/ContactOwnerButton"
 import CloneButton from "@/components/workflow/CloneButton"
@@ -48,15 +48,28 @@ interface Props {
   isLoggedIn: boolean
 }
 
+const LAYOUT_KEY = "mf_workflow_layout"
+
 export default function WorkflowDetailView({
   workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming, isLoggedIn
 }: Props) {
-  const [layout, setLayout] = useState<Layout>("classic")
+  const [layout, setLayout] = useState<Layout>("hero")
 
+  // Restore persisted layout on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(LAYOUT_KEY) as Layout | null
+    if (saved === "hero" || saved === "kanban") setLayout(saved)
+  }, [])
+
+  function switchLayout(l: Layout) {
+    setLayout(l)
+    localStorage.setItem(LAYOUT_KEY, l)
+  }
+
+  // Classic kept in code but not shown in UI
   const layoutButtons: { id: Layout; icon: React.ReactNode; label: string }[] = [
-    { id: "classic", icon: <LayoutTemplate className="w-4 h-4" />, label: "Classic" },
-    { id: "hero",    icon: <Maximize2 className="w-4 h-4" />,      label: "Map Hero" },
-    { id: "kanban",  icon: <Kanban className="w-4 h-4" />,         label: "Kanban" },
+    { id: "hero",   icon: <Maximize2 className="w-4 h-4" />, label: "Map" },
+    { id: "kanban", icon: <Kanban className="w-4 h-4" />,    label: "Kanban" },
   ]
 
   return (
@@ -89,20 +102,20 @@ export default function WorkflowDetailView({
         </div>
 
         {/* Layout toggle */}
-        <div className="shrink-0 flex items-center gap-1 bg-stone-100 rounded-xl p-1">
+        <div className="shrink-0 flex items-center gap-2 bg-stone-100 rounded-xl p-1.5">
           {layoutButtons.map(btn => (
             <button
               key={btn.id}
-              onClick={() => setLayout(btn.id)}
+              onClick={() => switchLayout(btn.id)}
               title={btn.label}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                 layout === btn.id
-                  ? "bg-white text-stone-900 shadow-sm"
-                  : "text-stone-500 hover:text-stone-700"
+                  ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                  : "text-stone-500 hover:text-stone-800 hover:bg-stone-50"
               }`}
             >
               {btn.icon}
-              <span className="hidden sm:inline">{btn.label}</span>
+              {btn.label}
             </button>
           ))}
         </div>
