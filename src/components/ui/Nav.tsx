@@ -51,7 +51,7 @@ export default function Nav() {
               </Link>
             ))}
 
-            {user && (
+            {user ? (
               <Link
                 href="/dashboard"
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -62,6 +62,13 @@ export default function Nav() {
               >
                 <LayoutDashboard className="w-4 h-4" />
                 <span className="hidden sm:inline">My Workflows</span>
+              </Link>
+            ) : (
+              <Link
+                href="/request-access"
+                className="ml-1 px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                Contribute
               </Link>
             )}
 
