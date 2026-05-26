@@ -277,9 +277,9 @@ function ToolCard({ st, tool }: { st: StepTool; tool: Tool }) {
 function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
   if (!steps.length) return null
   return (
-    <div className="flex items-center gap-0 overflow-x-auto pb-2 -mx-1 px-1">
+    <div className="flex items-stretch gap-0 overflow-x-auto pb-2 -mx-1 px-1">
       {steps.map((step, index) => (
-        <div key={step.id} className="flex items-start shrink-0">
+        <div key={step.id} className="flex items-center shrink-0">
           <a
             href={`#step-${step.id}`}
             className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2.5 hover:border-purple-300 hover:bg-purple-50 transition-colors group shadow-sm"
@@ -292,7 +292,7 @@ function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
             </span>
           </a>
           {index < steps.length - 1 && (
-            <ArrowRight className="w-5 h-5 text-stone-400 mx-0.5 shrink-0 mt-3" />
+            <ArrowRight className="w-5 h-5 text-stone-400 mx-0.5 shrink-0" />
           )}
         </div>
       ))}
