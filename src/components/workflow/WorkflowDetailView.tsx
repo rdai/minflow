@@ -203,7 +203,7 @@ function StepsList({ steps }: { steps: StepWithTools[] }) {
   return (
     <div className="space-y-4">
       {steps.map((step, index) => (
-        <article key={step.id} className="relative pl-11">
+        <article key={step.id} id={`step-${step.id}`} className="relative pl-11 scroll-mt-20">
           {index < steps.length - 1 && (
             <div className="absolute left-3 top-9 bottom-[-1rem] border-l-2 border-purple-100" />
           )}
@@ -274,37 +274,78 @@ function ToolCard({ st, tool }: { st: StepTool; tool: Tool }) {
   )
 }
 
+function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
+  if (!steps.length) return null
+  return (
+    <div className="flex items-center gap-0 overflow-x-auto pb-2 -mx-1 px-1">
+      {steps.map((step, index) => (
+        <div key={step.id} className="flex items-center shrink-0">
+          <a
+            href={`#step-${step.id}`}
+            className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2 hover:border-purple-300 hover:bg-purple-50 transition-colors group shadow-sm"
+          >
+            <span className="bg-purple-100 text-purple-700 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 group-hover:bg-purple-200">
+              {step.step_order}
+            </span>
+            <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 whitespace-nowrap max-w-[140px] truncate">
+              {step.title}
+            </span>
+            {step.tools.length > 0 && (
+              <span className="text-xs text-stone-400 shrink-0">{step.tools.length}🔧</span>
+            )}
+          </a>
+          {index < steps.length - 1 && (
+            <ArrowRight className="w-4 h-4 text-stone-300 mx-1 shrink-0" />
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function WorkflowOverview({ workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming }: WorkflowOverviewProps) {
   return (
     <div className="space-y-10">
+
+      {/* 1. Process strip — at-a-glance sequence */}
+      {steps.length > 0 && (
+        <section>
+          <h2 className="text-base font-bold text-stone-800 mb-3">Process overview</h2>
+          <ProcessStrip steps={steps} />
+        </section>
+      )}
+
+      {/* 2. Step-by-step detail */}
       <section>
-        <div className="mb-3">
-          <h2 className="text-base font-bold text-stone-800">Where this workflow fits</h2>
-          <p className="text-sm text-stone-500 mt-1">Inputs, outcomes, and connected workflows at a glance.</p>
+        <div className="mb-4">
+          <h2 className="text-base font-bold text-stone-800">How to do it</h2>
+          <p className="text-sm text-stone-500 mt-1">Follow the steps in order and use the supporting tools where helpful.</p>
         </div>
-        <WorkflowGraph key={workflow.id} workflow={workflow} steps={steps} inputs={inputs} outputs={outputs} links={links} allWorkflows={allWorkflows} />
-        <p className="text-xs text-stone-400 mt-2">Click a node for details. Drag to pan; pinch or use controls to zoom.</p>
+        {steps.length > 0 ? (
+          <StepsList steps={steps} />
+        ) : (
+          <p className="text-sm text-stone-500 border border-stone-200 rounded-xl p-4 bg-white">No steps have been listed yet.</p>
+        )}
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <section className="lg:col-span-2">
-          <div className="mb-4">
-            <h2 className="text-base font-bold text-stone-800">How to do it</h2>
-            <p className="text-sm text-stone-500 mt-1">Follow the steps in order and use the supporting tools where helpful.</p>
-          </div>
-          {steps.length > 0 ? (
-            <StepsList steps={steps} />
-          ) : (
-            <p className="text-sm text-stone-500 border border-stone-200 rounded-xl p-4 bg-white">No steps have been listed yet.</p>
-          )}
-        </section>
+      {/* 3. Where this fits — ecosystem map at the bottom */}
+      <section className="border-t border-stone-100 pt-10">
+        <div className="mb-4">
+          <h2 className="text-base font-bold text-stone-800">Where this workflow fits</h2>
+          <p className="text-sm text-stone-500 mt-1">Inputs, outputs, and connections to other workflows.</p>
+        </div>
+        <WorkflowGraph key={workflow.id} workflow={workflow} steps={steps} inputs={inputs} outputs={outputs} links={links} allWorkflows={allWorkflows} />
+        <p className="text-xs text-stone-400 mt-2">Click a node for details · Drag to pan · Pinch or use controls to zoom</p>
 
-        <aside className="lg:col-span-1 space-y-7 border border-stone-200 rounded-xl bg-white p-5">
-          <InputsList inputs={inputs} />
-          <OutputsList outputs={outputs} />
-          <RelatedFlows outgoing={outgoing} incoming={incoming} />
-        </aside>
-      </div>
+        {(inputs.length > 0 || outputs.length > 0 || outgoing.length > 0 || incoming.length > 0) && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+            <InputsList inputs={inputs} />
+            <OutputsList outputs={outputs} />
+            <RelatedFlows outgoing={outgoing} incoming={incoming} />
+          </div>
+        )}
+      </section>
+
     </div>
   )
 }
