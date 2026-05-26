@@ -44,7 +44,7 @@ export default function ContributorWorkflowForm({ workflow, isAdmin }: Props) {
     setError("")
 
     const parsedTags = tags.split(",").map(t => t.trim().toLowerCase()).filter(Boolean)
-    const payload = {
+    const basePayload = {
       title, slug, description, category, medium: medium || null,
       difficulty, tags: parsedTags, contact_enabled: contactEnabled,
       visibility,
@@ -53,11 +53,13 @@ export default function ContributorWorkflowForm({ workflow, isAdmin }: Props) {
     }
 
     if (isEdit) {
-      const { error } = await supabase.from("workflows").update(payload).eq("id", workflow.id)
+      const { error } = await supabase.from("workflows").update(basePayload).eq("id", workflow.id)
       if (error) { setError(error.message); setLoading(false); return }
       router.push("/dashboard")
     } else {
-      const { error } = await supabase.from("workflows").insert(payload)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setError("Not logged in"); setLoading(false); return }
+      const { error } = await supabase.from("workflows").insert({ ...basePayload, created_by: user.id })
       if (error) { setError(error.message); setLoading(false); return }
       router.push("/dashboard")
     }
