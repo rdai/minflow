@@ -3,16 +3,19 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Copy } from "lucide-react"
+import { useAnalytics } from "@/lib/useAnalytics"
 
 export default function CloneButton({ workflowId }: { workflowId: string }) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { track } = useAnalytics()
 
   async function handleClone() {
     setLoading(true)
     const res = await fetch(`/api/workflows/${workflowId}/clone`, { method: "POST" })
     const json = await res.json()
     if (res.ok) {
+      track('clone', workflowId)
       router.push(`/dashboard/workflows/${json.id}/edit`)
     } else {
       alert(json.error || "Clone failed")

@@ -3,6 +3,9 @@ import { ArrowRight, ExternalLink } from "lucide-react"
 import WorkflowGraph from "@/components/graph/WorkflowGraph"
 import ContactOwnerButton from "@/components/workflow/ContactOwnerButton"
 import CloneButton from "@/components/workflow/CloneButton"
+import TrackableLink from "@/components/ui/TrackableLink"
+import { DEFAULT_GOAL_THEME, GOAL_COLORS, GOAL_ICONS, GOAL_THEMES } from "@/lib/category-display"
+import type { GoalTheme } from "@/lib/category-display"
 import type { StepTool, Tool, Workflow, WorkflowInput, WorkflowLink, WorkflowOutput, WorkflowStep } from "@/types"
 
 const difficultyColors: Record<string, string> = {
@@ -51,10 +54,12 @@ type WorkflowOverviewProps = Omit<Props, "isLoggedIn">
 export default function WorkflowDetailView({
   workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming, isLoggedIn
 }: Props) {
+  const goalTheme = GOAL_THEMES[workflow.category || ""] || DEFAULT_GOAL_THEME
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-8">
+      <div className={`flex items-start justify-between gap-4 mb-8 rounded-2xl border p-5 sm:p-6 ${goalTheme.header}`}>
         <div className="min-w-0">
           <div className="flex items-center gap-3 mb-3 flex-wrap">
             <h1 className="text-3xl font-bold text-stone-900">{workflow.title}</h1>
@@ -64,7 +69,8 @@ export default function WorkflowDetailView({
               </span>
             )}
             {workflow.category && (
-              <span className="text-sm px-3 py-1 rounded-full font-medium bg-stone-100 text-stone-600">
+              <span className={`flex items-center gap-1.5 text-sm px-3 py-1 rounded-full border font-medium ${GOAL_COLORS[workflow.category] || "bg-stone-50 text-stone-600 border-stone-200"}`}>
+                <span className="[&>svg]:w-4 [&>svg]:h-4">{GOAL_ICONS[workflow.category]}</span>
                 {workflow.category}
               </span>
             )}
@@ -102,6 +108,7 @@ export default function WorkflowDetailView({
       <WorkflowOverview
         workflow={workflow} steps={steps} inputs={inputs} outputs={outputs}
         links={links} allWorkflows={allWorkflows} outgoing={outgoing} incoming={incoming}
+        goalTheme={goalTheme}
       />
     </div>
   )
@@ -198,16 +205,16 @@ function RelatedFlows({ outgoing, incoming }: { outgoing: WorkflowLinkWithTarget
   )
 }
 
-function StepsList({ steps }: { steps: StepWithTools[] }) {
+function StepsList({ steps, workflowId, goalTheme }: { steps: StepWithTools[], workflowId: string, goalTheme: GoalTheme }) {
   if (!steps.length) return null
   return (
     <div className="space-y-4">
       {steps.map((step, index) => (
-        <article key={step.id} id={`step-${step.id}`} className="relative pl-11 scroll-mt-20 target:[&>div]:ring-2 target:[&>div]:ring-purple-300 target:[&>div]:ring-offset-2">
+        <article key={step.id} id={`step-${step.id}`} className={`relative pl-11 scroll-mt-20 target:[&>div]:ring-2 target:[&>div]:ring-offset-2 ${goalTheme.targetRing}`}>
           {index < steps.length - 1 && (
-            <div className="absolute left-3 top-9 bottom-[-1rem] border-l-2 border-purple-100" />
+            <div className={`absolute left-3 top-9 bottom-[-1rem] border-l-2 ${goalTheme.line}`} />
           )}
-          <span className="absolute left-0 top-4 bg-purple-100 text-purple-700 text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">
+          <span className={`absolute left-0 top-4 text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center ${goalTheme.badge}`}>
             {step.step_order}
           </span>
           <div className="border border-stone-200 rounded-xl overflow-hidden bg-white">
@@ -221,7 +228,7 @@ function StepsList({ steps }: { steps: StepWithTools[] }) {
                   <div className="text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">Tools for this step</div>
                   <div className="grid gap-2 sm:grid-cols-2">
                     {step.tools.map((st) => st.tool && (
-                      <ToolCard key={st.id} st={st} tool={st.tool} />
+                      <ToolCard key={st.id} st={st} tool={st.tool} workflowId={workflowId} />
                     ))}
                   </div>
                 </div>
@@ -234,7 +241,7 @@ function StepsList({ steps }: { steps: StepWithTools[] }) {
   )
 }
 
-function ToolCard({ st, tool }: { st: StepTool; tool: Tool }) {
+function ToolCard({ st, tool, workflowId }: { st: StepTool; tool: Tool; workflowId: string }) {
   return (
     <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
       <div className="flex items-start justify-between gap-2">
@@ -243,15 +250,18 @@ function ToolCard({ st, tool }: { st: StepTool; tool: Tool }) {
           {st.role && <div className="text-xs text-emerald-700 mt-0.5">{st.role}</div>}
         </div>
         {tool.url && (
-          <a
+          <TrackableLink
             href={tool.url}
+            workflowId={workflowId}
+            event="tool_link_click"
+            properties={{ tool_name: tool.name, tool_id: tool.id }}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Visit ${tool.name}`}
             className="text-emerald-500 hover:text-emerald-700 shrink-0 p-0.5"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+          </TrackableLink>
         )}
       </div>
       {(st.notes || tool.description) && (
@@ -274,7 +284,7 @@ function ToolCard({ st, tool }: { st: StepTool; tool: Tool }) {
   )
 }
 
-function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
+function ProcessStrip({ steps, goalTheme }: { steps: StepWithTools[], goalTheme: GoalTheme }) {
   if (!steps.length) return null
   return (
     <div className="flex items-stretch gap-0 overflow-x-auto pb-2 -mx-1 px-1">
@@ -282,9 +292,9 @@ function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
         <div key={step.id} className="flex items-center shrink-0">
           <a
             href={`#step-${step.id}`}
-            className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2.5 hover:border-purple-300 hover:bg-purple-50 transition-colors group shadow-sm"
+            className={`flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2.5 transition-colors group shadow-sm ${goalTheme.processHover}`}
           >
-            <span className="bg-purple-100 text-purple-700 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 group-hover:bg-purple-200 transition-colors">
+            <span className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${goalTheme.badge}`}>
               {step.step_order}
             </span>
             <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 max-w-[180px]">
@@ -300,7 +310,7 @@ function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
   )
 }
 
-function WorkflowOverview({ workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming }: WorkflowOverviewProps) {
+function WorkflowOverview({ workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming, goalTheme }: WorkflowOverviewProps & { goalTheme: GoalTheme }) {
   return (
     <div className="space-y-10">
 
@@ -308,7 +318,7 @@ function WorkflowOverview({ workflow, steps, inputs, outputs, links, allWorkflow
       {steps.length > 0 && (
         <section>
           <h2 className="text-base font-bold text-stone-800 mb-3">Process overview</h2>
-          <ProcessStrip steps={steps} />
+          <ProcessStrip steps={steps} goalTheme={goalTheme} />
         </section>
       )}
 
@@ -319,7 +329,7 @@ function WorkflowOverview({ workflow, steps, inputs, outputs, links, allWorkflow
           <p className="text-sm text-stone-500 mt-1">Follow the steps in order and use the supporting tools where helpful.</p>
         </div>
         {steps.length > 0 ? (
-          <StepsList steps={steps} />
+          <StepsList steps={steps} workflowId={workflow.id} goalTheme={goalTheme} />
         ) : (
           <p className="text-sm text-stone-500 border border-stone-200 rounded-xl p-4 bg-white">No steps have been listed yet.</p>
         )}

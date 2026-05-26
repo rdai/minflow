@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Mail, X } from "lucide-react"
+import { useAnalytics } from "@/lib/useAnalytics"
 
 export default function ContactOwnerButton({ workflowId, workflowTitle }: { workflowId: string; workflowTitle: string }) {
   const [open, setOpen] = useState(false)
@@ -11,6 +12,7 @@ export default function ContactOwnerButton({ workflowId, workflowTitle }: { work
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState("")
+  const { track } = useAnalytics()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -23,6 +25,7 @@ export default function ContactOwnerButton({ workflowId, workflowTitle }: { work
     })
     const json = await res.json()
     if (!res.ok) { setError(json.error); setLoading(false); return }
+    track('contact_submit', workflowId)
     setDone(true)
     setLoading(false)
   }

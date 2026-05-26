@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { GOAL_ORDER } from "@/lib/categories"
 import type { Workflow } from "@/types"
 
 interface Props {
@@ -54,7 +55,7 @@ export default function ContributorWorkflowForm({ workflow, isAdmin }: Props) {
       if (error) { setError(error.message); setLoading(false); return }
       router.push("/dashboard")
     } else {
-      const { data, error } = await supabase.from("workflows").insert(payload).select().single()
+      const { error } = await supabase.from("workflows").insert(payload)
       if (error) { setError(error.message); setLoading(false); return }
       router.push("/dashboard")
     }
@@ -102,7 +103,7 @@ export default function ContributorWorkflowForm({ workflow, isAdmin }: Props) {
             list="category-options"
           />
           <datalist id="category-options">
-            {["Scripture Access", "Evangelism", "Follow-up", "Discipleship", "Church Planting", "Training"].map((c) => (
+            {GOAL_ORDER.map((c) => (
               <option key={c} value={c} />
             ))}
           </datalist>

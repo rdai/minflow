@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { GOAL_ORDER } from "@/lib/categories"
 import type { Workflow } from "@/types"
 
 interface Props {
@@ -95,7 +96,7 @@ export default function WorkflowForm({ workflow }: Props) {
             list="category-options"
           />
           <datalist id="category-options">
-            {["Scripture Access", "Evangelism", "Follow-up", "Discipleship", "Church Planting", "Training"].map((c) => (
+            {GOAL_ORDER.map((c) => (
               <option key={c} value={c} />
             ))}
           </datalist>

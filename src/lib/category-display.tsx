@@ -21,6 +21,67 @@ export const GOAL_COLORS: Record<string, string> = {
   "Training":         "bg-orange-50 text-orange-700 border-orange-200",
 }
 
+export interface GoalTheme {
+  header: string
+  badge: string
+  line: string
+  processHover: string
+  targetRing: string
+}
+
+export const DEFAULT_GOAL_THEME: GoalTheme = {
+  header: "bg-stone-50 border-stone-200",
+  badge: "bg-stone-100 text-stone-700",
+  line: "border-stone-200",
+  processHover: "hover:border-stone-300 hover:bg-stone-50",
+  targetRing: "target:[&>div]:ring-stone-300",
+}
+
+export const GOAL_THEMES: Record<string, GoalTheme> = {
+  "Scripture Access": {
+    header: "bg-amber-50/70 border-amber-200",
+    badge: "bg-amber-100 text-amber-700",
+    line: "border-amber-200",
+    processHover: "hover:border-amber-300 hover:bg-amber-50",
+    targetRing: "target:[&>div]:ring-amber-300",
+  },
+  "Evangelism": {
+    header: "bg-green-50/70 border-green-200",
+    badge: "bg-green-100 text-green-700",
+    line: "border-green-200",
+    processHover: "hover:border-green-300 hover:bg-green-50",
+    targetRing: "target:[&>div]:ring-green-300",
+  },
+  "Follow-up": {
+    header: "bg-cyan-50/70 border-cyan-200",
+    badge: "bg-cyan-100 text-cyan-700",
+    line: "border-cyan-200",
+    processHover: "hover:border-cyan-300 hover:bg-cyan-50",
+    targetRing: "target:[&>div]:ring-cyan-300",
+  },
+  "Discipleship": {
+    header: "bg-purple-50/70 border-purple-200",
+    badge: "bg-purple-100 text-purple-700",
+    line: "border-purple-200",
+    processHover: "hover:border-purple-300 hover:bg-purple-50",
+    targetRing: "target:[&>div]:ring-purple-300",
+  },
+  "Church Planting": {
+    header: "bg-rose-50/70 border-rose-200",
+    badge: "bg-rose-100 text-rose-700",
+    line: "border-rose-200",
+    processHover: "hover:border-rose-300 hover:bg-rose-50",
+    targetRing: "target:[&>div]:ring-rose-300",
+  },
+  "Training": {
+    header: "bg-orange-50/70 border-orange-200",
+    badge: "bg-orange-100 text-orange-700",
+    line: "border-orange-200",
+    processHover: "hover:border-orange-300 hover:bg-orange-50",
+    targetRing: "target:[&>div]:ring-orange-300",
+  },
+}
+
 // ============================================================
 // MEDIUM icons + colors (medium field)
 // ============================================================

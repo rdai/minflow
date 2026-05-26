@@ -7,6 +7,7 @@ import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 import type { Workflow } from "@/types"
 import { getSession } from "@/lib/auth"
+import { logEvent } from "@/lib/analytics"
 
 export default async function WorkflowDetailPage({
   params,
@@ -21,6 +22,9 @@ export default async function WorkflowDetailPage({
   } catch {
     notFound()
   }
+
+  // Fire and forget — don't await
+  logEvent({ event: 'workflow_view', workflow_id: workflow.id, properties: { slug } })
 
   const [steps, inputs, outputs, links, allWorkflows, outgoing, incoming, session] = await Promise.all([
     getStepsWithTools(workflow.id),
