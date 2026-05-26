@@ -315,7 +315,7 @@ function ClassicLayout({ workflow, steps, inputs, outputs, links, allWorkflows, 
         <div>
           <h2 className="text-base font-bold text-stone-800 mb-3">Visual Map</h2>
           <WorkflowGraph workflow={workflow} steps={steps} inputs={inputs} outputs={outputs} links={links} allWorkflows={allWorkflows} />
-          <p className="text-xs text-stone-400 mt-2">Click any node to see details</p>
+          <p className="text-xs text-stone-400 mt-2">Click a node for details · Drag to pan · Pinch or use controls to zoom</p>
         </div>
         {steps.length > 0 && (
           <div>
@@ -380,7 +380,7 @@ function KanbanLayout({ workflow, steps, inputs, outputs, links, allWorkflows, o
         {/* Map center */}
         <div className="lg:col-span-3">
           <WorkflowGraph workflow={workflow} steps={steps} inputs={inputs} outputs={outputs} links={links} allWorkflows={allWorkflows} />
-          <p className="text-xs text-stone-400 mt-2 text-center">Click any node to see details</p>
+          <p className="text-xs text-stone-400 mt-2 text-center">Click a node for details · Drag to pan · Pinch or use controls to zoom</p>
         </div>
 
         {/* Outputs */}

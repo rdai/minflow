@@ -71,6 +71,10 @@ export default function WorkflowGraph({ workflow, steps, inputs, outputs, links,
         minZoom={0.3}
         maxZoom={2}
         attributionPosition="bottom-right"
+        zoomOnScroll={false}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={true}
       >
         <Background color="#e7e5e0" gap={20} size={1} />
         <Controls showInteractive={false} className="bg-white border border-stone-200 rounded-lg shadow-sm" />
