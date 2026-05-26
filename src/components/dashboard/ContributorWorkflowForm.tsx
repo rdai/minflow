@@ -25,6 +25,7 @@ export default function ContributorWorkflowForm({ workflow, isAdmin }: Props) {
   const [difficulty, setDifficulty] = useState(workflow?.difficulty || "")
   const [tags, setTags] = useState((workflow?.tags || []).join(", "))
   const [contactEnabled, setContactEnabled] = useState(workflow?.contact_enabled || false)
+  const [visibility, setVisibility] = useState<'public' | 'private'>(workflow?.visibility || 'public')
   const [verified, setVerified] = useState(workflow?.verified || false)
   const [status, setStatus] = useState<'draft' | 'published'>(workflow?.status || "draft")
   const [loading, setLoading] = useState(false)
@@ -46,6 +47,7 @@ export default function ContributorWorkflowForm({ workflow, isAdmin }: Props) {
     const payload = {
       title, slug, description, category, medium: medium || null,
       difficulty, tags: parsedTags, contact_enabled: contactEnabled,
+      visibility,
       ...(isAdmin ? { verified } : {}),
       status, updated_at: new Date().toISOString()
     }
@@ -182,6 +184,32 @@ export default function ContributorWorkflowForm({ workflow, isAdmin }: Props) {
             className="rounded border-stone-300 text-blue-600"
           />
           <span className="text-sm text-stone-700">Allow visitors to contact me about this workflow</span>
+        </label>
+      </div>
+
+      <div className="flex items-center gap-4 pt-1">
+        <span className="text-sm font-medium text-stone-700">Visibility</span>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name="visibility"
+            value="public"
+            checked={visibility === 'public'}
+            onChange={() => setVisibility('public')}
+            className="text-blue-600"
+          />
+          <span className="text-sm text-stone-700">Public</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name="visibility"
+            value="private"
+            checked={visibility === 'private'}
+            onChange={() => setVisibility('private')}
+            className="text-purple-600"
+          />
+          <span className="text-sm text-stone-700">Private <span className="text-stone-400">(share by link)</span></span>
         </label>
       </div>
 

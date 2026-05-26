@@ -1,4 +1,5 @@
 import { createClient } from './supabase/server'
+import { createAdminClient } from './supabase/admin'
 import type { Workflow, WorkflowStep, WorkflowOutput, WorkflowInput, Tool, StepTool, WorkflowLink } from '@/types'
 
 export async function getWorkflows() {
@@ -7,10 +8,24 @@ export async function getWorkflows() {
     .from('workflows')
     .select('*')
     .eq('status', 'published')
+    .eq('visibility', 'public')
     .order('category', { ascending: true })
     .order('title', { ascending: true })
   if (error) throw error
   return data as Workflow[]
+}
+
+// Fetch a private workflow by share_token — uses service role to bypass RLS.
+// Only call server-side after verifying the token came from user input.
+export async function getWorkflowByShareToken(token: string) {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from('workflows')
+    .select('*')
+    .eq('share_token', token)
+    .single()
+  if (error) throw error
+  return data as Workflow
 }
 
 export async function getWorkflow(slug: string) {

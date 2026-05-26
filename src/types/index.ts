@@ -9,6 +9,8 @@ export interface Workflow {
   tags: string[] | null
   created_by: string | null
   status: 'draft' | 'published'
+  visibility: 'public' | 'private'
+  share_token: string
   is_clone_of: string | null
   contact_enabled: boolean
   verified: boolean
@@ -91,6 +93,17 @@ export interface WorkflowLink {
   target_workflow_id: string
   relationship_type: 'enables' | 'requires' | 'feeds_into' | 'alternative_to'
   description: string | null
+}
+
+export interface StepContact {
+  id: string
+  step_id: string
+  name: string
+  email: string | null
+  organization: string | null
+  role: string | null
+  notes: string | null
+  created_at: string
 }
 
 export type RelationshipType = 'enables' | 'requires' | 'feeds_into' | 'alternative_to'

@@ -86,3 +86,10 @@ Each workflow page shows a React Flow graph:
 - **Linked Workflows** (blue) — downstream connections
 
 Click any node to open a side panel with details.
+
+## Adding Categories
+The database already stores category as text, so no schema migration is needed. To add a fully styled category now:
+Add its name to GOAL_ORDER in categories.ts (line 4). This controls ordering and editor suggestions.
+Add its icon and homepage card color to GOAL_ICONS and GOAL_COLORS in category-display.tsx (line 6).
+Add its workflow-detail styling to GOAL_THEMES in category-display.tsx (line 40).
+An unregistered category will still render, but with neutral fallback styling.
