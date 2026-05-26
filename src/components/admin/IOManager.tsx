@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, Pencil, Check, X } from "lucide-react"
 
 interface IOItem {
   id: string
@@ -22,6 +22,9 @@ export default function IOManager({ workflowId, table, items: initialItems }: Pr
   const [newTitle, setNewTitle] = useState("")
   const [newDesc, setNewDesc] = useState("")
   const [loading, setLoading] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState("")
+  const [editDesc, setEditDesc] = useState("")
   const router = useRouter()
   const supabase = createClient()
 
@@ -48,22 +51,90 @@ export default function IOManager({ workflowId, table, items: initialItems }: Pr
     router.refresh()
   }
 
+  function startEdit(item: IOItem) {
+    setEditingId(item.id)
+    setEditTitle(item.title)
+    setEditDesc(item.description || "")
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditTitle("")
+    setEditDesc("")
+  }
+
+  async function saveEdit(itemId: string) {
+    if (!editTitle.trim()) return
+    const { error } = await supabase
+      .from(table)
+      .update({ title: editTitle, description: editDesc || null })
+      .eq("id", itemId)
+    if (!error) {
+      setItems(items.map(i => i.id === itemId ? { ...i, title: editTitle, description: editDesc || null } : i))
+      cancelEdit()
+      router.refresh()
+    }
+  }
+
   return (
     <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
       {items.length > 0 && (
         <div className="divide-y divide-stone-100">
           {items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between px-4 py-3">
-              <div>
-                <div className="text-sm font-medium text-stone-800">{item.title}</div>
-                {item.description && <div className="text-xs text-stone-500 mt-0.5">{item.description}</div>}
-              </div>
-              <button
-                onClick={() => deleteItem(item.id)}
-                className="text-stone-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+            <div key={item.id} className="px-4 py-3">
+              {editingId === item.id ? (
+                <div className="space-y-2">
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full border border-blue-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    autoFocus
+                    onKeyDown={(e) => e.key === "Enter" && saveEdit(item.id)}
+                  />
+                  <input
+                    value={editDesc}
+                    onChange={(e) => setEditDesc(e.target.value)}
+                    className="w-full border border-stone-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    placeholder="Description (optional)"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => saveEdit(item.id)}
+                      className="flex items-center gap-1 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700"
+                    >
+                      <Check className="w-3 h-3" /> Save
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="flex items-center gap-1 text-stone-500 text-xs px-3 py-1.5 rounded-lg hover:bg-stone-100"
+                    >
+                      <X className="w-3 h-3" /> Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-stone-800">{item.title}</div>
+                    {item.description && <div className="text-xs text-stone-500 mt-0.5">{item.description}</div>}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => startEdit(item)}
+                      className="text-stone-400 hover:text-blue-600 p-1.5 rounded hover:bg-blue-50"
+                      title="Edit"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => deleteItem(item.id)}
+                      className="text-stone-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

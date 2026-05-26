@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Plus, Trash2, ChevronUp, ChevronDown, Wrench } from "lucide-react"
+import { Plus, Trash2, ChevronUp, ChevronDown, Wrench, Pencil, Check, X } from "lucide-react"
 import type { WorkflowStep, Tool } from "@/types"
 
 interface StepWithTools extends WorkflowStep {
@@ -133,8 +133,37 @@ function StepRow({ step, index, total, allTools, onDelete, onMove }: {
   const [selectedTool, setSelectedTool] = useState("")
   const [toolRole, setToolRole] = useState("")
   const [toolRec, setToolRec] = useState("optional")
+  const [isEditing, setIsEditing] = useState(false)
+  const [localTitle, setLocalTitle] = useState(step.title)
+  const [localDesc, setLocalDesc] = useState(step.description || "")
+  const [editTitle, setEditTitle] = useState("")
+  const [editDesc, setEditDesc] = useState("")
   const supabase = createClient()
   const router = useRouter()
+
+  function startEdit() {
+    setEditTitle(localTitle)
+    setEditDesc(localDesc)
+    setIsEditing(true)
+  }
+
+  function cancelEdit() {
+    setIsEditing(false)
+  }
+
+  async function saveEdit() {
+    if (!editTitle.trim()) return
+    const { error } = await supabase
+      .from("workflow_steps")
+      .update({ title: editTitle, description: editDesc || null })
+      .eq("id", step.id)
+    if (!error) {
+      setLocalTitle(editTitle)
+      setLocalDesc(editDesc)
+      setIsEditing(false)
+      router.refresh()
+    }
+  }
 
   async function addTool() {
     if (!selectedTool) return
@@ -159,19 +188,58 @@ function StepRow({ step, index, total, allTools, onDelete, onMove }: {
 
   return (
     <div className="px-4 py-3">
+      {isEditing ? (
+        <div className="flex items-start gap-3">
+          <span className="bg-purple-100 text-purple-700 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-1.5">
+            {step.step_order}
+          </span>
+          <div className="flex-1 space-y-2">
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="w-full border border-blue-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100"
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && saveEdit()}
+            />
+            <textarea
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+              className="w-full border border-stone-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none h-16"
+              placeholder="Description (optional)"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={saveEdit}
+                className="flex items-center gap-1 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700"
+              >
+                <Check className="w-3 h-3" /> Save
+              </button>
+              <button
+                onClick={cancelEdit}
+                className="flex items-center gap-1 text-stone-500 text-xs px-3 py-1.5 rounded-lg hover:bg-stone-100"
+              >
+                <X className="w-3 h-3" /> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="bg-purple-100 text-purple-700 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0">
             {step.step_order}
           </span>
           <div>
-            <div className="text-sm font-medium text-stone-800">{step.title}</div>
-            {step.description && <div className="text-xs text-stone-500 mt-0.5">{step.description}</div>}
+            <div className="text-sm font-medium text-stone-800">{localTitle}</div>
+            {localDesc && <div className="text-xs text-stone-500 mt-0.5">{localDesc}</div>}
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={() => setShowTools(!showTools)} className="text-emerald-500 hover:text-emerald-700 p-1 rounded hover:bg-emerald-50" title="Manage tools">
             <Wrench className="w-4 h-4" />
+          </button>
+          <button onClick={startEdit} className="text-stone-400 hover:text-blue-600 p-1 rounded hover:bg-blue-50" title="Edit step">
+            <Pencil className="w-4 h-4" />
           </button>
           <button onClick={() => onMove("up")} disabled={index === 0} className="text-stone-400 hover:text-stone-600 p-1 rounded hover:bg-stone-100 disabled:opacity-30">
             <ChevronUp className="w-4 h-4" />
@@ -184,6 +252,7 @@ function StepRow({ step, index, total, allTools, onDelete, onMove }: {
           </button>
         </div>
       </div>
+      )}
 
       {showTools && (
         <div className="mt-3 ml-9 space-y-2">
