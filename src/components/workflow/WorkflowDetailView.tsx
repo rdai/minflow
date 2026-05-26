@@ -1,14 +1,9 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowRight, ExternalLink, Maximize2, Kanban } from "lucide-react"
+import { ArrowRight, ExternalLink } from "lucide-react"
 import WorkflowGraph from "@/components/graph/WorkflowGraph"
 import ContactOwnerButton from "@/components/workflow/ContactOwnerButton"
 import CloneButton from "@/components/workflow/CloneButton"
-import type { Workflow } from "@/types"
-
-type Layout = "classic" | "hero" | "kanban"
+import type { StepTool, Tool, Workflow, WorkflowInput, WorkflowLink, WorkflowOutput, WorkflowStep } from "@/types"
 
 const difficultyColors: Record<string, string> = {
   beginner: "bg-green-100 text-green-700",
@@ -38,40 +33,24 @@ const costColors: Record<string, string> = {
 
 interface Props {
   workflow: Workflow
-  steps: any[]
-  inputs: any[]
-  outputs: any[]
-  links: any[]
+  steps: StepWithTools[]
+  inputs: WorkflowInput[]
+  outputs: WorkflowOutput[]
+  links: WorkflowLink[]
   allWorkflows: Workflow[]
-  outgoing: any[]
-  incoming: any[]
+  outgoing: WorkflowLinkWithTarget[]
+  incoming: WorkflowLinkWithSource[]
   isLoggedIn: boolean
 }
 
-const LAYOUT_KEY = "mf_workflow_layout"
+type StepWithTools = WorkflowStep & { tools: StepTool[] }
+type WorkflowLinkWithTarget = WorkflowLink & { target?: Workflow | null }
+type WorkflowLinkWithSource = WorkflowLink & { source?: Workflow | null }
+type WorkflowOverviewProps = Omit<Props, "isLoggedIn">
 
 export default function WorkflowDetailView({
   workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming, isLoggedIn
 }: Props) {
-  const [layout, setLayout] = useState<Layout>("hero")
-
-  // Restore persisted layout on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(LAYOUT_KEY) as Layout | null
-    if (saved === "hero" || saved === "kanban") setLayout(saved)
-  }, [])
-
-  function switchLayout(l: Layout) {
-    setLayout(l)
-    localStorage.setItem(LAYOUT_KEY, l)
-  }
-
-  // Classic kept in code but not shown in UI
-  const layoutButtons: { id: Layout; icon: React.ReactNode; label: string }[] = [
-    { id: "hero",   icon: <Maximize2 className="w-4 h-4" />, label: "Map" },
-    { id: "kanban", icon: <Kanban className="w-4 h-4" />,    label: "Kanban" },
-  ]
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
       {/* Header */}
@@ -111,25 +90,8 @@ export default function WorkflowDetailView({
           )}
         </div>
 
-        {/* Controls: all actions right-aligned */}
+        {/* Actions */}
         <div className="shrink-0 flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2 bg-stone-50 border border-stone-300 rounded-xl p-1.5 shadow-sm">
-            {layoutButtons.map(btn => (
-              <button
-                key={btn.id}
-                onClick={() => switchLayout(btn.id)}
-                title={btn.label}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  layout === btn.id
-                    ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                    : "text-stone-500 hover:text-stone-800 hover:bg-stone-50"
-                }`}
-              >
-                {btn.icon}
-                {btn.label}
-              </button>
-            ))}
-          </div>
           {isLoggedIn && <CloneButton workflowId={workflow.id} />}
           {workflow.contact_enabled && (
             <ContactOwnerButton workflowId={workflow.id} workflowTitle={workflow.title} />
@@ -137,31 +99,17 @@ export default function WorkflowDetailView({
         </div>
       </div>
 
-      {layout === "classic" && (
-        <ClassicLayout
-          workflow={workflow} steps={steps} inputs={inputs} outputs={outputs}
-          links={links} allWorkflows={allWorkflows} outgoing={outgoing} incoming={incoming}
-        />
-      )}
-      {layout === "hero" && (
-        <HeroLayout
-          workflow={workflow} steps={steps} inputs={inputs} outputs={outputs}
-          links={links} allWorkflows={allWorkflows} outgoing={outgoing} incoming={incoming}
-        />
-      )}
-      {layout === "kanban" && (
-        <KanbanLayout
-          workflow={workflow} steps={steps} inputs={inputs} outputs={outputs}
-          links={links} allWorkflows={allWorkflows} outgoing={outgoing} incoming={incoming}
-        />
-      )}
+      <WorkflowOverview
+        workflow={workflow} steps={steps} inputs={inputs} outputs={outputs}
+        links={links} allWorkflows={allWorkflows} outgoing={outgoing} incoming={incoming}
+      />
     </div>
   )
 }
 
 /* ─── Shared sub-components ─── */
 
-function InputsList({ inputs }: { inputs: any[] }) {
+function InputsList({ inputs }: { inputs: WorkflowInput[] }) {
   if (!inputs.length) return null
   return (
     <div>
@@ -184,7 +132,7 @@ function InputsList({ inputs }: { inputs: any[] }) {
   )
 }
 
-function OutputsList({ outputs }: { outputs: any[] }) {
+function OutputsList({ outputs }: { outputs: WorkflowOutput[] }) {
   if (!outputs.length) return null
   return (
     <div>
@@ -207,7 +155,7 @@ function OutputsList({ outputs }: { outputs: any[] }) {
   )
 }
 
-function RelatedFlows({ outgoing, incoming }: { outgoing: any[]; incoming: any[] }) {
+function RelatedFlows({ outgoing, incoming }: { outgoing: WorkflowLinkWithTarget[]; incoming: WorkflowLinkWithSource[] }) {
   if (!outgoing.length && !incoming.length) return null
   return (
     <div className="space-y-4">
@@ -215,7 +163,7 @@ function RelatedFlows({ outgoing, incoming }: { outgoing: any[]; incoming: any[]
         <div>
           <h2 className="text-base font-bold text-stone-800 mb-3">What comes next</h2>
           <div className="space-y-2">
-            {outgoing.map((link: any) => (
+            {outgoing.map((link) => (
               <Link key={link.id} href={`/workflows/${link.target?.slug}`}
                 className={`block border rounded-xl p-3 hover:shadow-sm transition-all ${relationshipColors[link.relationship_type] || "bg-stone-50 border-stone-200"}`}>
                 <div className="flex items-center justify-between">
@@ -233,7 +181,7 @@ function RelatedFlows({ outgoing, incoming }: { outgoing: any[]; incoming: any[]
         <div>
           <h2 className="text-base font-bold text-stone-800 mb-3">Comes from</h2>
           <div className="space-y-2">
-            {incoming.map((link: any) => (
+            {incoming.map((link) => (
               <Link key={link.id} href={`/workflows/${link.source?.slug}`}
                 className="block border border-stone-200 rounded-xl p-3 bg-stone-50 hover:bg-stone-100 transition-colors">
                 <div className="flex items-center justify-between">
@@ -250,205 +198,113 @@ function RelatedFlows({ outgoing, incoming }: { outgoing: any[]; incoming: any[]
   )
 }
 
-function StepsList({ steps }: { steps: any[] }) {
+function StepsList({ steps }: { steps: StepWithTools[] }) {
   if (!steps.length) return null
   return (
     <div className="space-y-4">
-      {steps.map(step => (
-        <div key={step.id} className="border border-stone-200 rounded-xl overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-3 bg-stone-50 border-b border-stone-100">
-            <span className="bg-purple-100 text-purple-700 text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0">
-              {step.step_order}
-            </span>
-            <h3 className="font-semibold text-stone-800">{step.title}</h3>
-          </div>
-          <div className="px-4 py-3">
-            {step.description && <p className="text-sm text-stone-600 mb-3">{step.description}</p>}
-            {step.tools.length > 0 && (
-              <div>
-                <div className="text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">Tools</div>
-                <div className="flex flex-wrap gap-2">
-                  {step.tools.map((st: any) => st.tool && (
-                    <ToolChip key={st.id} st={st} />
-                  ))}
+      {steps.map((step, index) => (
+        <article key={step.id} className="relative pl-11">
+          {index < steps.length - 1 && (
+            <div className="absolute left-3 top-9 bottom-[-1rem] border-l-2 border-purple-100" />
+          )}
+          <span className="absolute left-0 top-4 bg-purple-100 text-purple-700 text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">
+            {step.step_order}
+          </span>
+          <div className="border border-stone-200 rounded-xl overflow-hidden bg-white">
+            <div className="px-4 py-3 bg-stone-50 border-b border-stone-100">
+              <h3 className="font-semibold text-stone-800">{step.title}</h3>
+            </div>
+            <div className="px-4 py-4">
+              {step.description && <p className="text-sm text-stone-600 mb-4 leading-relaxed">{step.description}</p>}
+              {step.tools.length > 0 && (
+                <div>
+                  <div className="text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">Tools for this step</div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {step.tools.map((st) => st.tool && (
+                      <ToolCard key={st.id} st={st} tool={st.tool} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </article>
       ))}
     </div>
   )
 }
 
-function ToolChip({ st }: { st: any }) {
+function ToolCard({ st, tool }: { st: StepTool; tool: Tool }) {
   return (
-    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5">
-      <span className="text-sm font-medium text-emerald-800">{st.tool.name}</span>
-      {st.tool.url && (
-        <a href={st.tool.url} target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-700">
-          <ExternalLink className="w-3 h-3" />
-        </a>
-      )}
-      {st.recommended_level === "recommended" && (
-        <span className="text-xs bg-green-100 text-green-700 px-1 rounded font-medium">★</span>
-      )}
-      {st.tool.cost_level && (
-        <span className={`text-xs px-1 rounded font-medium ${costColors[st.tool.cost_level] || ""}`}>
-          {st.tool.cost_level}
-        </span>
-      )}
-    </div>
-  )
-}
-
-/* ─── Layout 1: Classic ─── */
-function ClassicLayout({ workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming }: any) {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-1 space-y-6">
-        <InputsList inputs={inputs} />
-        <OutputsList outputs={outputs} />
-        <RelatedFlows outgoing={outgoing} incoming={incoming} />
-      </div>
-      <div className="lg:col-span-2 space-y-8">
+    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+      <div className="flex items-start justify-between gap-2">
         <div>
-          <h2 className="text-base font-bold text-stone-800 mb-3">Visual Map</h2>
-          <WorkflowGraph workflow={workflow} steps={steps} inputs={inputs} outputs={outputs} links={links} allWorkflows={allWorkflows} />
-          <p className="text-xs text-stone-400 mt-2">Click a node for details · Drag to pan · Pinch or use controls to zoom</p>
+          <div className="text-sm font-semibold text-emerald-800">{tool.name}</div>
+          {st.role && <div className="text-xs text-emerald-700 mt-0.5">{st.role}</div>}
         </div>
-        {steps.length > 0 && (
-          <div>
-            <h2 className="text-base font-bold text-stone-800 mb-4">Steps</h2>
-            <StepsList steps={steps} />
-          </div>
+        {tool.url && (
+          <a
+            href={tool.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Visit ${tool.name}`}
+            className="text-emerald-500 hover:text-emerald-700 shrink-0 p-0.5"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        )}
+      </div>
+      {(st.notes || tool.description) && (
+        <p className="text-xs text-stone-600 mt-2 leading-relaxed">{st.notes || tool.description}</p>
+      )}
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {st.recommended_level === "recommended" && (
+          <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Recommended</span>
+        )}
+        {tool.cost_level && (
+          <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${costColors[tool.cost_level] || ""}`}>
+            {tool.cost_level}
+          </span>
+        )}
+        {tool.offline_capable && (
+          <span className="text-xs bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-medium">Offline capable</span>
         )}
       </div>
     </div>
   )
 }
 
-/* ─── Layout 2: Map Hero ─── */
-function HeroLayout({ workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming }: any) {
+function WorkflowOverview({ workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming }: WorkflowOverviewProps) {
   return (
-    <div className="space-y-8">
-      {/* Full-width map */}
-      <div>
-        <h2 className="text-base font-bold text-stone-800 mb-3">Visual Map</h2>
-        <WorkflowGraph workflow={workflow} steps={steps} inputs={inputs} outputs={outputs} links={links} allWorkflows={allWorkflows} />
-        <p className="text-xs text-stone-400 mt-2">Click any node to see details</p>
-      </div>
-      {/* Steps + metadata below */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {steps.length > 0 && (
-          <div className="lg:col-span-2">
-            <h2 className="text-base font-bold text-stone-800 mb-4">Steps</h2>
-            <StepsList steps={steps} />
+    <div className="space-y-10">
+      <section>
+        <div className="mb-3">
+          <h2 className="text-base font-bold text-stone-800">Where this workflow fits</h2>
+          <p className="text-sm text-stone-500 mt-1">Inputs, outcomes, and connected workflows at a glance.</p>
+        </div>
+        <WorkflowGraph key={workflow.id} workflow={workflow} steps={steps} inputs={inputs} outputs={outputs} links={links} allWorkflows={allWorkflows} />
+        <p className="text-xs text-stone-400 mt-2">Click a node for details. Drag to pan; pinch or use controls to zoom.</p>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <section className="lg:col-span-2">
+          <div className="mb-4">
+            <h2 className="text-base font-bold text-stone-800">How to do it</h2>
+            <p className="text-sm text-stone-500 mt-1">Follow the steps in order and use the supporting tools where helpful.</p>
           </div>
-        )}
-        <div className="lg:col-span-1 space-y-6">
+          {steps.length > 0 ? (
+            <StepsList steps={steps} />
+          ) : (
+            <p className="text-sm text-stone-500 border border-stone-200 rounded-xl p-4 bg-white">No steps have been listed yet.</p>
+          )}
+        </section>
+
+        <aside className="lg:col-span-1 space-y-7 border border-stone-200 rounded-xl bg-white p-5">
           <InputsList inputs={inputs} />
           <OutputsList outputs={outputs} />
           <RelatedFlows outgoing={outgoing} incoming={incoming} />
-        </div>
+        </aside>
       </div>
-    </div>
-  )
-}
-
-/* ─── Layout 3: Kanban ─── */
-function KanbanLayout({ workflow, steps, inputs, outputs, links, allWorkflows, outgoing, incoming }: any) {
-  return (
-    <div className="space-y-8">
-      {/* Map flanked by inputs/outputs */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
-        {/* Inputs */}
-        <div className="lg:col-span-1 bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <div className="text-xs font-bold text-amber-700 uppercase tracking-wide mb-3">Inputs</div>
-          {inputs.length > 0 ? (
-            <ul className="space-y-2">
-              {inputs.map((i: any) => (
-                <li key={i.id} className="text-sm text-stone-700">
-                  <span className="font-medium">{i.title}</span>
-                  {i.description && <p className="text-xs text-stone-500 mt-0.5">{i.description}</p>}
-                </li>
-              ))}
-            </ul>
-          ) : <p className="text-xs text-stone-400">None listed</p>}
-        </div>
-
-        {/* Map center */}
-        <div className="lg:col-span-3">
-          <WorkflowGraph workflow={workflow} steps={steps} inputs={inputs} outputs={outputs} links={links} allWorkflows={allWorkflows} />
-          <p className="text-xs text-stone-400 mt-2 text-center">Click a node for details · Drag to pan · Pinch or use controls to zoom</p>
-        </div>
-
-        {/* Outputs */}
-        <div className="lg:col-span-1 bg-red-50 border border-red-200 rounded-xl p-4">
-          <div className="text-xs font-bold text-red-700 uppercase tracking-wide mb-3">Outputs</div>
-          {outputs.length > 0 ? (
-            <ul className="space-y-2">
-              {outputs.map((o: any) => (
-                <li key={o.id} className="text-sm text-stone-700">
-                  <span className="font-medium">{o.title}</span>
-                  {o.description && <p className="text-xs text-stone-500 mt-0.5">{o.description}</p>}
-                </li>
-              ))}
-            </ul>
-          ) : <p className="text-xs text-stone-400">None listed</p>}
-        </div>
-      </div>
-
-      {/* Horizontal kanban steps */}
-      {steps.length > 0 && (
-        <div>
-          <h2 className="text-base font-bold text-stone-800 mb-4">Steps</h2>
-          <div className="flex gap-4 overflow-x-auto pb-4">
-            {steps.map((step: any) => (
-              <div key={step.id} className="shrink-0 w-64 border border-stone-200 rounded-xl bg-white overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 bg-stone-50 border-b border-stone-100">
-                  <span className="bg-purple-100 text-purple-700 text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0">
-                    {step.step_order}
-                  </span>
-                  <h3 className="font-semibold text-stone-800 text-sm leading-tight">{step.title}</h3>
-                </div>
-                <div className="px-4 py-3 space-y-3">
-                  {step.description && (
-                    <p className="text-xs text-stone-600">{step.description}</p>
-                  )}
-                  {step.tools.length > 0 && (
-                    <div className="space-y-1.5">
-                      <div className="text-xs font-semibold text-stone-400 uppercase tracking-wide">Tools</div>
-                      {step.tools.map((st: any) => st.tool && (
-                        <div key={st.id} className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1.5 text-xs">
-                          <span className="font-medium text-emerald-800">{st.tool.name}</span>
-                          {st.tool.url && (
-                            <a href={st.tool.url} target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-700 ml-auto">
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          )}
-                          {st.tool.cost_level && (
-                            <span className={`px-1 rounded font-medium ${costColors[st.tool.cost_level] || ""}`}>
-                              {st.tool.cost_level}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Related flows at bottom */}
-      {(outgoing.length > 0 || incoming.length > 0) && (
-        <div className="border-t border-stone-100 pt-6">
-          <RelatedFlows outgoing={outgoing} incoming={incoming} />
-        </div>
-      )}
     </div>
   )
 }

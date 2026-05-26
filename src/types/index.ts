@@ -95,19 +95,15 @@ export interface WorkflowLink {
 
 export type RelationshipType = 'enables' | 'requires' | 'feeds_into' | 'alternative_to'
 
-export type NodeType = 'workflow' | 'step' | 'tool' | 'output' | 'input'
+export type NodeType = 'workflow' | 'output' | 'input'
 
 export interface GraphNodeData {
   label: string
   nodeType: NodeType
   description?: string | null
-  url?: string | null
-  cost_level?: string | null
-  difficulty_level?: string | null
-  offline_capable?: boolean
-  notes?: string | null
-  inputs?: WorkflowInput[]
-  outputs?: WorkflowOutput[]
-  tools?: StepTool[]
-  relatedWorkflows?: WorkflowLink[]
+  slug?: string
+  relationshipType?: RelationshipType
+  isCurrent?: boolean
+  stepCount?: number
+  toolCount?: number
 }

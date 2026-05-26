@@ -30,9 +30,6 @@ export default function IONode({ data, selected }: NodeProps) {
       {isInput && (
         <Handle type="source" position={Position.Right} className="!bg-amber-400" />
       )}
-      {!isInput && (
-        <Handle type="source" position={Position.Right} className="!bg-red-400" />
-      )}
     </div>
   )
 }
