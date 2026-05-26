@@ -203,7 +203,7 @@ function StepsList({ steps }: { steps: StepWithTools[] }) {
   return (
     <div className="space-y-4">
       {steps.map((step, index) => (
-        <article key={step.id} id={`step-${step.id}`} className="relative pl-11 scroll-mt-20">
+        <article key={step.id} id={`step-${step.id}`} className="relative pl-11 scroll-mt-20 target:[&>div]:ring-2 target:[&>div]:ring-purple-300 target:[&>div]:ring-offset-2">
           {index < steps.length - 1 && (
             <div className="absolute left-3 top-9 bottom-[-1rem] border-l-2 border-purple-100" />
           )}
@@ -282,20 +282,17 @@ function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
         <div key={step.id} className="flex items-center shrink-0">
           <a
             href={`#step-${step.id}`}
-            className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2 hover:border-purple-300 hover:bg-purple-50 transition-colors group shadow-sm"
+            className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2.5 hover:border-purple-300 hover:bg-purple-50 transition-colors group shadow-sm"
           >
-            <span className="bg-purple-100 text-purple-700 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 group-hover:bg-purple-200">
+            <span className="bg-purple-100 text-purple-700 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 group-hover:bg-purple-200 transition-colors">
               {step.step_order}
             </span>
-            <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 whitespace-nowrap max-w-[140px] truncate">
+            <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 whitespace-nowrap max-w-[160px] truncate">
               {step.title}
             </span>
-            {step.tools.length > 0 && (
-              <span className="text-xs text-stone-400 shrink-0">{step.tools.length}🔧</span>
-            )}
           </a>
           {index < steps.length - 1 && (
-            <ArrowRight className="w-4 h-4 text-stone-300 mx-1 shrink-0" />
+            <ArrowRight className="w-5 h-5 text-stone-400 mx-0.5 shrink-0" />
           )}
         </div>
       ))}
