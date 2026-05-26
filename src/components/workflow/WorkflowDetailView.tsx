@@ -279,7 +279,7 @@ function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
   return (
     <div className="flex items-center gap-0 overflow-x-auto pb-2 -mx-1 px-1">
       {steps.map((step, index) => (
-        <div key={step.id} className="flex items-center shrink-0">
+        <div key={step.id} className="flex items-start shrink-0">
           <a
             href={`#step-${step.id}`}
             className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2.5 hover:border-purple-300 hover:bg-purple-50 transition-colors group shadow-sm"
@@ -287,12 +287,12 @@ function ProcessStrip({ steps }: { steps: StepWithTools[] }) {
             <span className="bg-purple-100 text-purple-700 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 group-hover:bg-purple-200 transition-colors">
               {step.step_order}
             </span>
-            <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 whitespace-nowrap max-w-[160px] truncate">
+            <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 max-w-[180px]">
               {step.title}
             </span>
           </a>
           {index < steps.length - 1 && (
-            <ArrowRight className="w-5 h-5 text-stone-400 mx-0.5 shrink-0" />
+            <ArrowRight className="w-5 h-5 text-stone-400 mx-0.5 shrink-0 mt-3" />
           )}
         </div>
       ))}
